@@ -6,17 +6,17 @@ The two supplied five-slide proposal PDFs describe complementary views of the sa
 
 | Proposal requirement | Implementation | Evidence limit |
 | --- | --- | --- |
-| Fan/window/curtain control | Four fan speeds, three window openings, two shade states | Advisory sandbox only |
-| Conversation preference memory | Activity targets, noise limit, airflow and energy weights, evidence log | Offline parser in submitted benchmark; optional Ollama |
-| Activity context | Explicit study/sleep/away input and simulated daily schedule | No automatic routine inference |
+| Fan/window/curtain control | Four fan speeds, three window openings, two shade states | Working local advisory application; no physical actuators |
+| Conversation preference memory | Actual Qwen3-4B temperature/activity, sleep fan and airflow extraction with grounded evidence | Held-out phrase evaluation; model errors disclosed |
+| Activity context | Explicit or learned study/sleep/away context | Saved time/weekday learner; chronological synthetic holdout |
 | Fuzzy comfort | Five triangular sets and Sugeno consequences | Heuristic TSV proxy, not a validated physiological model |
-| RC model | Exact constant-forcing 1R1C heat equation and air moisture balance | Uncalibrated synthetic room |
+| RC model | Exact constant-forcing 1R1C heat equation and air moisture balance | Calibrated on 14 days of noisy synthetic observations |
 | Genetic algorithm | Population 10, eight generations, tournament selection, elitism, crossover, mutation | Exact enumeration audits a small action space |
-| F417 B1/B2/B3/B4 | Expert rules, adaptive+fallback, ANN, actual generic LLM adapter | B4 unavailable in submitted run |
+| F417 B1/B2/B3/B4 | Expert rules, adaptive+fallback, ANN, actual generic LLM adapter | Actual generic local-LLM baseline included |
 | F423 B1/B2/B3/B4 | Fixed schedule, adaptive+fallback, physics only, same generic LLM | Fixed settings are illustrative, not rating-system prescriptions |
 | Preference improvement | Initial-survey ablation with scripted mid-trial preference change | Mechanical memory test only |
 | Comfort, energy, acceptance, latency | Exported per-seed and aggregate metrics | Human outcomes remain unmeasured |
-| Data/pilot model | 672-row synthetic sample, validator and chronological calibration | Software recovery test, not field validation |
+| Data/pilot model | 1,344-row noisy pilot plus exact recovery sample, validator and held-out calibration | Software recovery test, not field validation |
 
 ## Room and moisture equations
 
@@ -52,7 +52,7 @@ A real NumPy neural regressor has three input features, 12 tanh hidden units and
 
 ## Evaluation protocol
 
-Each seed supplies identical weather, occupied schedule, initial room state and synthetic hidden-occupant scenario to all policies. Each policy evolves its own closed-loop room state. Both survey and proposed methods begin with the same initial explicit profile. Halfway through the trial, the hidden study target shifts by -1 C. Only a scripted conversation reveals the changed preference to the proposed method. The controller never directly reads the hidden profile.
+All methods make decisions hourly while physics advances every 15 minutes. Each seed supplies identical weather, occupied schedule, initial room state and synthetic hidden-occupant scenario to all policies. Each policy evolves its own closed-loop room state. Both survey and proposed methods begin with the same initial explicit profile. Halfway through the trial, the hidden study target shifts by -1 C. Only a scripted conversation reveals the changed preference to the proposed method. The controller never directly reads the hidden profile.
 
 The acceptance oracle differs numerically from the fuzzy controller but remains related to its assumptions. A proposal is accepted in the oracle when its absolute sensation is <=1.2 and noise/airflow requirements are met. Every action still gets applied, including proxy-declined actions. This evaluates policy effects under full compliance and does not model actual acceptance-mediated energy consumption.
 
@@ -61,3 +61,16 @@ Comfort violations use absolute oracle TSV >1 during occupied intervals. Fan ene
 Per-method means and sample SD across weather seeds describe scenario variation. These are not participant confidence intervals. Energy change is relative to the fixed-schedule mean. EPI is period fan kWh/m². No claims of annualized building performance, causal human benefit or statistical significance follow.
 
 Scientific outputs are deterministic for fixed seeds. Latency is machine-dependent. Failed LLM runs are discarded in full and disclosed. Comparisons involving an incomplete seed set need separate scrutiny before interpretation.
+
+
+## Actual local model and learning artifacts
+
+Qwen3-4B-Q4_K_M runs through a pinned portable llama.cpp server. Revision URLs, release identifiers and SHA256 values are in local_model.py. The response schema, prompts, observed inputs, model outputs, timings and cache status are recorded in outputs/study/llm_inference.jsonl. Numeric/type checks and exact-message quote grounding precede a memory commit. A narrow model verification request can repair unsupported evidence quotes. Missing inference never silently becomes a rule-parser result.
+
+The 24-case language evaluation uses separate held-out synthetic phrases and reports every miss, extra field and safe rejection. The learned activity prior trains on 14 days and tests on a subsequent seven days. The application names whether activity comes from a synthetic cold-start prior or sufficient personal observations. Inferred labels are not fed back as if observed.
+
+The benchmark evaluates automatic extraction without human correction. In the application, preference interpretation is previewed without saving and requires explicit confirmation. Discard leaves memory unchanged. Confirmation rechecks consent and the expected profile, preventing a stale proposal from overwriting a later revision. This software review does not alter the raw benchmark score.
+
+Saved neural parameters, activity counts, training datasets and validation metadata are under models/. The complete study also runs six predeclared energy weights (0, 0.1, 0.25, 0.5, 1, 2), plus the survey and no-physics ablations. These do not select a favorable test result after observation.
+
+The final outputs are under outputs/study/. Earlier offline v1 outputs under outputs/demo are historical and do not define the current submission.

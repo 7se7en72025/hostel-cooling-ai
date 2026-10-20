@@ -1,0 +1,32 @@
+{
+  "provenance": "synthetic schedule learning; no real student routines",
+  "seed": 801,
+  "train_days": 14,
+  "test_days": 7,
+  "test_n": 672,
+  "accuracy": 0.9345238095238095,
+  "macro_f1": 0.935887406625124,
+  "labels": [
+    "study",
+    "sleep",
+    "away"
+  ],
+  "confusion_matrix": [
+    [
+      230,
+      2,
+      14
+    ],
+    [
+      21,
+      215,
+      0
+    ],
+    [
+      7,
+      0,
+      183
+    ]
+  ],
+  "majority_baseline_accuracy": 0.36607142857142855
+}

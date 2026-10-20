@@ -19,3 +19,10 @@ Technical foundations:
 - [Ollama structured-output documentation](https://docs.ollama.com/capabilities/structured-outputs): defines the optional schema-constrained local-model integration.
 
 The final question remains empirical: does activity-specific retained preference feedback plus a calibrated room model improve metered energy and occupied comfort relative to matched baselines? The current dataset cannot establish that. It supports reproducibility, software validation and preparation for a measured pilot.
+
+
+Actual model resources in the completed project:
+
+- [Official Qwen3-4B GGUF model card](https://huggingface.co/Qwen/Qwen3-4B-GGUF): actual pinned transformer used for extraction and the generic LLM baseline.
+- [llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md): local, schema-constrained inference interface.
+- [EnergyPlus concrete material example](https://raw.githubusercontent.com/NatLabRockies/EnergyPlus/develop/testfiles/1ZoneUncontrolled.idf): source for the optional envelope calculator's initial concrete properties. Surface films, effective mass participation and other envelope properties remain explicit user assumptions.

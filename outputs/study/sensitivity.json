@@ -1,0 +1,44 @@
+[
+  {
+    "energy_weight": 0,
+    "fan_wh_day": 312.6666666666667,
+    "mean_abs_tsv_proxy": 1.5728509678205205,
+    "comfort_violation_pct": 56.25,
+    "acceptance_proxy_pct": 42.01388888888889
+  },
+  {
+    "energy_weight": 0.1,
+    "fan_wh_day": 296.3333333333333,
+    "mean_abs_tsv_proxy": 1.5203549550956392,
+    "comfort_violation_pct": 55.03472222222222,
+    "acceptance_proxy_pct": 43.229166666666664
+  },
+  {
+    "energy_weight": 0.25,
+    "fan_wh_day": 287.1111111111111,
+    "mean_abs_tsv_proxy": 1.5216745649024097,
+    "comfort_violation_pct": 55.03472222222222,
+    "acceptance_proxy_pct": 43.40277777777778
+  },
+  {
+    "energy_weight": 0.5,
+    "fan_wh_day": 253.11111111111111,
+    "mean_abs_tsv_proxy": 1.5488076832227557,
+    "comfort_violation_pct": 55.55555555555556,
+    "acceptance_proxy_pct": 43.05555555555556
+  },
+  {
+    "energy_weight": 1,
+    "fan_wh_day": 86.0,
+    "mean_abs_tsv_proxy": 1.5729006147803106,
+    "comfort_violation_pct": 54.34027777777778,
+    "acceptance_proxy_pct": 42.01388888888889
+  },
+  {
+    "energy_weight": 2,
+    "fan_wh_day": 8.0,
+    "mean_abs_tsv_proxy": 1.637027646604392,
+    "comfort_violation_pct": 57.63888888888889,
+    "acceptance_proxy_pct": 35.06944444444444
+  }
+]

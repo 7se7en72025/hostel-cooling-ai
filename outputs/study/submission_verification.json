@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "required_methods": [
+    "adaptive",
+    "ann",
+    "expert",
+    "fixed",
+    "generic_llm",
+    "no_physics",
+    "ours",
+    "physics",
+    "survey"
+  ],
+  "weather_seeds": [
+    11,
+    23,
+    47
+  ],
+  "closed_loop_intervals": 18144,
+  "unique_actual_model_requests": 540,
+  "language_cases": 24,
+  "energy_accounting": "verified from raw trajectories",
+  "away_and_rain_constraints": "verified across every simulated interval",
+  "model_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+  "trajectory_sha256": "5f2d2a23bde6b4ccb89af23a683273994255d42d4d33efab9cc744c4b65adff7"
+}

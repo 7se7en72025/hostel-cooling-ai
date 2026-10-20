@@ -1,0 +1,311 @@
+{
+  "title": "Cooling for student hostels",
+  "slides": [
+    {
+      "title": "Cooling for student hostels",
+      "subtitle": "CE F417 + CE F423",
+      "lines": [
+        "Preference memory, building physics and constrained room control",
+        "Completed simulated research project"
+      ],
+      "notes": "All room and occupant outcomes are simulated. The local transformer, training and exported computations actually ran. Course instructor: Prof. Rajiv Gupta."
+    },
+    {
+      "title": "Research question",
+      "lines": [
+        "Can retained student preferences guide fan, window and curtain decisions?",
+        "F417: language, memory and AI comparisons",
+        "F423: airflow, solar gains and energy",
+        "Study, sleep and away can require different settings"
+      ],
+      "notes": "Source proposals define the combined scope. Conversation-based comfort learning already exists: https://doi.org/10.1016/j.enbuild.2026.117181"
+    },
+    {
+      "title": "Implemented system",
+      "lines": [
+        "1. Consented feedback updates an activity-specific profile",
+        "2. Heat and moisture balances estimate room conditions",
+        "3. Fuzzy comfort and a GA score legal controls",
+        "4. Suggestions, evidence and self-reports persist locally",
+        "Learned activity inference and CSV calibration are available in the application"
+      ],
+      "notes": "Source: implemented modules preferences.py, physics.py, optimizer.py, server.py and routines.py. Self-reports remain separate from simulation labels."
+    },
+    {
+      "title": "Room model and calibration",
+      "table": [
+        [
+          "Parameter",
+          "Synthetic plant",
+          "Fitted controller"
+        ],
+        [
+          "UA / W K-1",
+          "58",
+          "72"
+        ],
+        [
+          "C / MJ K-1",
+          "2.5",
+          "2.75"
+        ],
+        [
+          "Area / m2",
+          "12",
+          "12"
+        ]
+      ],
+      "lines": [
+        "C dT/dt = G (Tout - T) + solar + internal gains + fan power",
+        "Fan electrical heat and perceived airflow relief remain separate"
+      ],
+      "notes": "The fitted parameters use separate noisy observations and can be biased. Model structure context: https://energyplus.readthedocs.io/en/stable/guides/engineering-reference/2.1-basis-for-the-zone-and-air-system-integration.html"
+    },
+    {
+      "title": "Actual local preference learning",
+      "lines": [
+        "Qwen3-4B-Q4_K_M",
+        "Pinned model revision and SHA256; local inference, no API key",
+        "Structured values require exact-message evidence quotes",
+        "Separate study and sleep targets survive activity changes",
+        "Invalid values and unsupported evidence cannot silently change memory"
+      ],
+      "notes": "Model source: https://huggingface.co/Qwen/Qwen3-4B-GGUF. Inference API: https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md. Actual prompts and outputs: llm_inference.jsonl."
+    },
+    {
+      "title": "Saved learning models",
+      "lines": [
+        "Comfort ANN: 0.148 TSV holdout MAE",
+        "2,000 training and 400 independent synthetic holdout points",
+        "Routine model: 93.5% chronological test accuracy",
+        "Majority routine baseline: 36.6%",
+        "Saved weights, counts, datasets and validation metadata accompany the project"
+      ],
+      "notes": "All model validation labels are synthetic. Routine split: 14 train days and seven later test days. Source: models/ann_validation.json and routine_validation.json."
+    },
+    {
+      "title": "Matched experimental design",
+      "lines": [
+        "7 days per seed; seeds [11, 23, 47]",
+        "15-minute physics, hourly control decisions for every policy",
+        "9 methods, separate closed-loop room trajectories",
+        "Same forcing, initial state and explicit constraints",
+        "Survey and no-physics ablations isolate memory and lookahead"
+      ],
+      "notes": "All actions apply, including proxy-declined suggestions. Comfort excludes away intervals. The generic LLM receives no personal history or numerical room forecast."
+    },
+    {
+      "title": "F417 comparison",
+      "table": [
+        [
+          "Controller",
+          "Wh/day",
+          "Mean |TSV|",
+          "Violation %"
+        ],
+        [
+          "expert",
+          "497.4",
+          "1.07",
+          "50.9"
+        ],
+        [
+          "adaptive",
+          "485.1",
+          "1.06",
+          "50.6"
+        ],
+        [
+          "ann",
+          "491.3",
+          "1.03",
+          "49.0"
+        ],
+        [
+          "generic_llm",
+          "141.4",
+          "1.77",
+          "76.5"
+        ],
+        [
+          "ours",
+          "290.7",
+          "1.40",
+          "54.7"
+        ]
+      ],
+      "lines": [
+        "Synthetic comfort outcomes; actual generic LLM inference"
+      ],
+      "notes": "Source: CE_F417_comparison.csv. Adaptive reference uses a documented fallback outside awake/study applicability. https://pythermalcomfort.readthedocs.io/en/latest/documentation/models.html"
+    },
+    {
+      "title": "F423 fan electricity",
+      "chart": {
+        "kind": "bar",
+        "categories": [
+          "fixed",
+          "adaptive",
+          "physics",
+          "generic_llm",
+          "ours"
+        ],
+        "values": [
+          448.0,
+          485.1,
+          236.6,
+          141.4,
+          290.7
+        ],
+        "unit": "Fan Wh/day"
+      },
+      "lines": [
+        "Energy must be interpreted alongside occupied discomfort",
+        "Proposed period fan EPI: 0.1696 kWh/m2"
+      ],
+      "notes": "Source: CE_F423_comparison.csv. EPI covers only fan electricity during this trial, not annual whole-building EPI."
+    },
+    {
+      "title": "Comfort and energy trade-off",
+      "lines": [
+        "Ours: 290.7 Wh/day; 54.7% violations",
+        "Fixed: 448.0 Wh/day; 52.3% violations",
+        "Fan energy change: -35.1%",
+        "Comfort violation change: +2.38 percentage points",
+        "Synthetic results establish a scenario trade-off, not a human benefit"
+      ],
+      "notes": "Source: summary.json and paired_comparisons.csv. Paired weather-seed intervals are exploratory with n=3; no participant inference."
+    },
+    {
+      "title": "Memory and physics ablations",
+      "table": [
+        [
+          "Method",
+          "Wh/day",
+          "Violation %",
+          "Accept proxy %"
+        ],
+        [
+          "ours",
+          "290.7",
+          "54.7",
+          "44.6"
+        ],
+        [
+          "survey",
+          "328.5",
+          "55.9",
+          "39.8"
+        ],
+        [
+          "no_physics",
+          "145.0",
+          "71.1",
+          "28.6"
+        ],
+        [
+          "physics",
+          "236.6",
+          "54.8",
+          "40.6"
+        ]
+      ],
+      "lines": [
+        "The survey starts with the same initial profile",
+        "A scripted target change reaches only memory-enabled policies"
+      ],
+      "notes": "Source: comparison.csv and conversation_evidence.json. The small scripted experiment tests retention mechanically; it is not an actual conversation-versus-survey trial."
+    },
+    {
+      "title": "Language evaluation",
+      "lines": [
+        "24 fixed held-out synthetic phrases",
+        "Exact-match accuracy: 70.8%",
+        "Field precision / recall: 0.667 / 0.800",
+        "Cross-activity persistence: True",
+        "All failures and safe rejections remain in the evidence",
+        "The app requires review and confirmation before saving preferences"
+      ],
+      "notes": "Source: language_evaluation.json. This is real local model inference, not parser output. Phrases include negation, unrelated observations, invalid values and mixed contexts."
+    },
+    {
+      "title": "Held-out room prediction",
+      "chart": {
+        "kind": "bar",
+        "categories": [
+          "Calibrated RC",
+          "Persistence"
+        ],
+        "values": [
+          0.18,
+          0.233
+        ],
+        "unit": "Held-out RMSE / C"
+      },
+      "lines": [
+        "14 days of noisy synthetic observations",
+        "Chronological 80/20 transition split",
+        "Low prediction error does not prove parameter identifiability"
+      ],
+      "notes": "Source: calibration.json and noisy_pilot_metadata.json. Parameter selection never uses test transitions."
+    },
+    {
+      "title": "Objective-weight sensitivity",
+      "chart": {
+        "kind": "line",
+        "categories": [
+          "0",
+          "0.1",
+          "0.25",
+          "0.5",
+          "1",
+          "2"
+        ],
+        "values": [
+          312.7,
+          296.3,
+          287.1,
+          253.1,
+          86.0,
+          8.0
+        ],
+        "unit": "Fan Wh/day"
+      },
+      "lines": [
+        "All six predeclared energy weights are reported",
+        "Same three seeds, three days per weight",
+        "Comfort outcomes accompany the energy curve in sensitivity.csv"
+      ],
+      "notes": "This sweep illustrates objective dependence. It does not select a winning weight after observing the test outcomes."
+    },
+    {
+      "title": "Completed deliverables",
+      "lines": [
+        "Working local application with actual transformer requests",
+        "Saved ANN and routine models, plus material and calibration tools",
+        "Both course baseline sets, ablations and sensitivity analysis",
+        "Raw interval data, inference journals and automated checks",
+        "Reproducible setup, complete report and source repository"
+      ],
+      "notes": "The approved scope is a completed simulated course project. Physical sensors, metered human outcomes and a 20-50 room field study are separate empirical work."
+    },
+    {
+      "title": "Limits and interpretation",
+      "lines": [
+        "One-node room physics omits radiant and spatial effects",
+        "Comfort labels and acceptance derive from assumed synthetic occupants",
+        "LLM extraction can miss or misinterpret phrases",
+        "No human effectiveness or building-certification claim",
+        "A measured, consented field study would test external validity"
+      ],
+      "notes": "Preserve the distinction between completed software and unmeasured real-world benefit. The project reports unfavorable outcomes instead of manufacturing positive hypotheses."
+    }
+  ],
+  "sources": {
+    "physics": "https://energyplus.readthedocs.io/en/stable/guides/engineering-reference/2.1-basis-for-the-zone-and-air-system-integration.html",
+    "adaptive": "https://pythermalcomfort.readthedocs.io/en/latest/documentation/models.html",
+    "model": "https://huggingface.co/Qwen/Qwen3-4B-GGUF",
+    "llama": "https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md",
+    "prior_work": "https://doi.org/10.1016/j.enbuild.2026.117181"
+  }
+}

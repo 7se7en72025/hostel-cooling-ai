@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "unit_tests": {
+    "count": 26,
+    "passed": 26
+  },
+  "browser": {
+    "engine": "Chromium headless",
+    "actual_local_llm": true,
+    "javascript_errors": 0,
+    "profile_isolation": true,
+    "preview_without_commit": true,
+    "confirm_and_discard": true,
+    "rain_constraints": true,
+    "csv_validation_and_calibration": true,
+    "feedback_and_erasure": true,
+    "responsive_width_px": 390
+  },
+  "packaging": {
+    "wheel_build": "passed",
+    "installed_outside_source_tree": "passed",
+    "web_and_benchmark_resources": "present",
+    "installed_model_training": "passed"
+  },
+  "report": {
+    "pages": 12,
+    "all_pages_rendered_and_visually_checked": true
+  },
+  "presentation_content": {
+    "slides": 16,
+    "editable_powerpoint_export": false,
+    "artifacts": [
+      "presentation_data.json",
+      "PRESENTATION_NOTES.md"
+    ]
+  },
+  "reproduction": "Independent frozen actual-response replay; exact trajectories and sensitivity, all scientific metrics and language outcomes match.",
+  "scope": "Simulated room and occupant data; actual inference, training, calibration and software execution."
+}

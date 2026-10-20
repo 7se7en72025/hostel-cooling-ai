@@ -1,0 +1,322 @@
+[
+  {
+    "contrast": "ours minus fixed",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": -157.28571428571428,
+    "sd_delta": 8.365380555404178,
+    "ci95_low": -178.06814882666683,
+    "ci95_high": -136.50327974476173,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus fixed",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 2.380952380952382,
+    "sd_delta": 3.6359499175210166,
+    "ci95_low": -6.651976922693795,
+    "ci95_high": 11.413881684598557,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus fixed",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": 0.23452585514479388,
+    "sd_delta": 0.032169041161219575,
+    "ci95_low": 0.15460707706286209,
+    "ci95_high": 0.31444463322672567,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus fixed",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -9.895833333333334,
+    "sd_delta": 3.9322054350368485,
+    "ci95_low": -19.664761538570584,
+    "ci95_high": -0.12690512809608379,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus expert",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": -206.71428571428572,
+    "sd_delta": 12.354458833199619,
+    "ci95_low": -237.40693983675664,
+    "ci95_high": -176.0216315918148,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus expert",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 3.794642857142859,
+    "sd_delta": 2.3304255600246764,
+    "ci95_low": -1.9949224032788755,
+    "ci95_high": 9.584208117564593,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus expert",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": 0.3228802703349031,
+    "sd_delta": 0.01845916482020828,
+    "ci95_low": 0.27702146187832866,
+    "ci95_high": 0.3687390787914775,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus expert",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -7.886904761904759,
+    "sd_delta": 6.6228597653195465,
+    "ci95_low": -24.34032832525294,
+    "ci95_high": 8.566518801443422,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus adaptive",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": -194.42857142857142,
+    "sd_delta": 15.339025858434198,
+    "ci95_low": -232.53589944713337,
+    "ci95_high": -156.32124341000946,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus adaptive",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 4.092261904761905,
+    "sd_delta": 1.567805617984038,
+    "ci95_low": 0.19730250478076927,
+    "ci95_high": 7.987221304743041,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus adaptive",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": 0.3327340288637543,
+    "sd_delta": 0.013216428118894598,
+    "ci95_low": 0.29989995151043053,
+    "ci95_high": 0.3655681062170781,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus adaptive",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 0.07440476190476393,
+    "sd_delta": 7.5969411669129965,
+    "ci95_low": -18.798966445438804,
+    "ci95_high": 18.94777596924833,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus ann",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": -200.61904761904762,
+    "sd_delta": 9.839874453045658,
+    "ci95_low": -225.06462368784995,
+    "ci95_high": -176.1734715502453,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus ann",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 5.729166666666667,
+    "sd_delta": 2.5774565588822607,
+    "ci95_low": -0.6741071428571503,
+    "ci95_high": 12.132440476190485,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus ann",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": 0.3700617034612486,
+    "sd_delta": 0.07837029645428698,
+    "ci95_low": 0.1753633815822661,
+    "ci95_high": 0.5647600253402312,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus ann",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -2.083333333333331,
+    "sd_delta": 7.940072364258397,
+    "ci95_low": -21.809158484709684,
+    "ci95_high": 17.64249181804302,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus physics",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": 54.09523809523811,
+    "sd_delta": 55.93168816955731,
+    "ci95_low": -84.8579918803984,
+    "ci95_high": 193.0484680708746,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus physics",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -0.14880952380952314,
+    "sd_delta": 0.9021097956087932,
+    "ci95_low": -2.3899553571428642,
+    "ci95_high": 2.0923363095238177,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus physics",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": -0.07161836928332528,
+    "sd_delta": 0.07967167818521435,
+    "ci95_low": -0.26954976352006416,
+    "ci95_high": 0.12631302495341357,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus physics",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 3.943452380952382,
+    "sd_delta": 3.503350406843321,
+    "ci95_low": -4.760054891912267,
+    "ci95_high": 12.64695965381703,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus generic_llm",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": 149.2857142857143,
+    "sd_delta": 10.934872133291181,
+    "ci95_low": 122.11979364185302,
+    "ci95_high": 176.4516349295756,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus generic_llm",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -21.800595238095237,
+    "sd_delta": 1.2692501569369055,
+    "ci95_low": -24.953841898893504,
+    "ci95_high": -18.64734857729697,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus generic_llm",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": -0.3750075085674318,
+    "sd_delta": 0.13864294218327708,
+    "ci95_low": -0.7194434671476581,
+    "ci95_high": -0.03057154998720557,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus generic_llm",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 17.633928571428573,
+    "sd_delta": 3.508087867299489,
+    "ci95_low": 8.918651844542248,
+    "ci95_high": 26.3492052983149,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus survey",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": -37.809523809523796,
+    "sd_delta": 35.41195847056599,
+    "ci95_low": -125.78480526949677,
+    "ci95_high": 50.16575765044918,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus survey",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -1.1904761904761898,
+    "sd_delta": 2.0006442946054706,
+    "ci95_low": -6.160753252827896,
+    "ci95_high": 3.7798008718755165,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus survey",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": -0.03912766288645549,
+    "sd_delta": 0.1059384195029542,
+    "ci95_low": -0.3023145261869908,
+    "ci95_high": 0.2240592004140798,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus survey",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 4.761904761904764,
+    "sd_delta": 1.8586303566661895,
+    "ci95_low": 0.1444383516900185,
+    "ci95_high": 9.379371172119509,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus no_physics",
+    "metric": "fan_wh_day",
+    "n_weather_seeds": 3,
+    "mean_delta": 145.66666666666669,
+    "sd_delta": 9.494717471517788,
+    "ci95_low": 122.07857727494348,
+    "ci95_high": 169.2547560583899,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus no_physics",
+    "metric": "comfort_violation_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": -16.443452380952383,
+    "sd_delta": 1.790358543975593,
+    "ci95_low": -20.89130851834841,
+    "ci95_high": -11.995596243556356,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus no_physics",
+    "metric": "mean_abs_tsv_proxy",
+    "n_weather_seeds": 3,
+    "mean_delta": -0.6553720297952709,
+    "sd_delta": 0.03511956415439991,
+    "ci95_low": -0.742620904883696,
+    "ci95_high": -0.5681231547068457,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  },
+  {
+    "contrast": "ours minus no_physics",
+    "metric": "acceptance_proxy_pct",
+    "n_weather_seeds": 3,
+    "mean_delta": 15.922619047619047,
+    "sd_delta": 3.1672316449096387,
+    "ci95_low": 8.054144457560454,
+    "ci95_high": 23.79109363767764,
+    "interpretation": "Exploratory paired weather-seed t interval; not a participant effect or human study."
+  }
+]

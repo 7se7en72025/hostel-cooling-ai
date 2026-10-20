@@ -1,0 +1,44 @@
+[
+  {
+    "seed": 11,
+    "step": 164,
+    "provenance": "synthetic scripted conversation",
+    "message": "I prefer 27.5 C when studying. I want airflow.",
+    "patch": {
+      "activity_targets": {
+        "study": 27.5
+      },
+      "study_airflow": true
+    },
+    "backend": "Qwen3-4B-Q4_K_M / llama.cpp b11756",
+    "extraction_ms": 1.0615999999572523
+  },
+  {
+    "seed": 23,
+    "step": 164,
+    "provenance": "synthetic scripted conversation",
+    "message": "I prefer 26.5 C when studying. I want airflow.",
+    "patch": {
+      "activity_targets": {
+        "study": 26.5
+      },
+      "study_airflow": true
+    },
+    "backend": "Qwen3-4B-Q4_K_M / llama.cpp b11756",
+    "extraction_ms": 0.994100000752951
+  },
+  {
+    "seed": 47,
+    "step": 164,
+    "provenance": "synthetic scripted conversation",
+    "message": "I prefer 27 C when studying. I want airflow.",
+    "patch": {
+      "activity_targets": {
+        "study": 27
+      },
+      "study_airflow": true
+    },
+    "backend": "Qwen3-4B-Q4_K_M / llama.cpp b11756",
+    "extraction_ms": 1.0281000004397356
+  }
+]

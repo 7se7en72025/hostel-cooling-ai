@@ -1,0 +1,32 @@
+{
+  "plant_room": {
+    "area_m2": 12,
+    "height_m": 3,
+    "ua_w_k": 58,
+    "capacity_j_k": 2500000,
+    "window_m2": 2,
+    "glazing_g": 0.6,
+    "orientation": "west",
+    "fan_w": [
+      0,
+      18,
+      38,
+      65
+    ],
+    "fan_speed_ms": [
+      0.1,
+      0.4,
+      0.8,
+      1.2
+    ]
+  },
+  "rows": 1344,
+  "seed": 301,
+  "noise": {
+    "indoor_temperature_sd_c": 0.12,
+    "outdoor_temperature_sd_c": 0.08,
+    "rh_sd_pct": 1,
+    "solar_sd_w_m2": 12
+  },
+  "provenance": "synthetic noisy sensor experiment; not measured data"
+}

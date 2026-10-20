@@ -30,4 +30,7 @@ Meter fan electrical power for each speed. Record floor area, material/envelope 
 
 For later field comparisons, randomize controller periods with washout or account for thermal carryover. Predefine comfort margins, primary outcomes, missing-data exclusions and withdrawal handling. Compare paired measured fan Wh and occupied discomfort, and report accepted suggestions separately from applied controls. A small pilot should estimate feasibility and variance before any powered effectiveness study.
 
-The dashboard stores one pseudonymous local profile in `runtime/pilot.sqlite3`. Consent is optional for generic recommendations but required for persistence and imported pilot processing. Erasure removes the local logical records; backups, exports and low-level SQLite page recovery are outside this application's deletion guarantee. Do not share the runtime directory or real pilot files through Git.
+The dashboard separates pseudonymous local profiles in `runtime/pilot.sqlite3`. Consent is optional for generic recommendations but required for persistence and imported pilot processing. Erasure removes the local logical records; backups, exports and low-level SQLite page recovery are outside this application's deletion guarantee. Do not share the runtime directory or real pilot files through Git.
+
+
+The completed software can calibrate and apply a room model from the Pilot & data screen. A fitted model is saved only with consent, scoped to the selected participant alias and included in that profile's export/erasure. The study's default calibrated synthetic room remains a separate shared research artifact. Startup uses the actual pinned local transformer; offline rules require explicit backend selection.

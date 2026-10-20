@@ -1,0 +1,165 @@
+{
+  "title": "Cooling for student hostels",
+  "provenance": "SYNTHETIC SIMULATION - no human pilot or measured savings",
+  "preference_backend": "Qwen3-4B-Q4_K_M / llama.cpp b11756",
+  "real_llm_used": true,
+  "inference_mode": "actual model",
+  "days_per_seed": 3,
+  "seeds": [
+    11,
+    23,
+    47
+  ],
+  "timestep_minutes": 15,
+  "room": {
+    "area_m2": 12,
+    "height_m": 3,
+    "ua_w_k": 72,
+    "capacity_j_k": 2750000,
+    "window_m2": 2,
+    "glazing_g": 0.6,
+    "orientation": "west",
+    "fan_w": [
+      0,
+      18,
+      38,
+      65
+    ],
+    "fan_speed_ms": [
+      0.1,
+      0.4,
+      0.8,
+      1.2
+    ]
+  },
+  "ann_validation": {
+    "data": "synthetic iid holdout, not human votes",
+    "train_n": 2000,
+    "test_n": 400,
+    "mae_tsv": 0.14815556202139743,
+    "seed": 1701
+  },
+  "control_interval_minutes": 60,
+  "plant_room": {
+    "area_m2": 12,
+    "height_m": 3,
+    "ua_w_k": 58,
+    "capacity_j_k": 2500000,
+    "window_m2": 2,
+    "glazing_g": 0.6,
+    "orientation": "west",
+    "fan_w": [
+      0,
+      18,
+      38,
+      65
+    ],
+    "fan_speed_ms": [
+      0.1,
+      0.4,
+      0.8,
+      1.2
+    ]
+  },
+  "model_provenance": {
+    "model": "Qwen3-4B-Q4_K_M",
+    "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    "runtime": "b11756",
+    "temperature": 0,
+    "seed": 7,
+    "max_tokens": 384,
+    "thinking": false
+  },
+  "llm_calls": 45,
+  "llm_cache_hits": 12,
+  "metrics_scope": "Fan electricity only; EPI is kWh/m2 over the simulated period, not annual whole-building EPI. All policies are auto-applied; acceptance is an oracle proxy, not observed behavior.",
+  "rows": [
+    {
+      "method": "ours",
+      "label": "Preference memory + fuzzy comfort + RC + GA",
+      "n_seeds": 3,
+      "fan_wh_day": 253.11111111111111,
+      "fan_wh_day_sd": 23.03941871694714,
+      "fan_epi_period_kwh_m2": 0.06327777777777777,
+      "fan_epi_period_kwh_m2_sd": 0.00575985467923679,
+      "mean_abs_tsv_proxy": 1.5488076832227557,
+      "mean_abs_tsv_proxy_sd": 0.17631329820652258,
+      "mean_tsv_proxy": 1.536189182715431,
+      "mean_tsv_proxy_sd": 0.17814865838193045,
+      "comfort_violation_pct": 55.55555555555556,
+      "comfort_violation_pct_sd": 3.3484898475669986,
+      "acceptance_proxy_pct": 43.05555555555556,
+      "acceptance_proxy_pct_sd": 3.6951035857279124,
+      "controller_latency_ms_median": 3.5500500002854096,
+      "controller_latency_ms_median_sd": 0.018455080575205847,
+      "controller_latency_ms_p95": 5.226566666654738,
+      "controller_latency_ms_p95_sd": 0.1362224776576852,
+      "ga_gap_max": 0.09325160635717333,
+      "fan_energy_change_vs_fixed_pct": null
+    }
+  ],
+  "runs": [
+    {
+      "seed": 11,
+      "method": "ours",
+      "days": 3,
+      "fan_wh_day": 229.33333333333334,
+      "fan_epi_period_kwh_m2": 0.057333333333333326,
+      "mean_abs_tsv_proxy": 1.5479708993598653,
+      "mean_tsv_proxy": 1.5330100964813564,
+      "comfort_violation_pct": 54.166666666666664,
+      "acceptance_proxy_pct": 43.75,
+      "controller_latency_ms_median": 3.5495500001161417,
+      "controller_latency_ms_p95": 5.383800000345218,
+      "ga_gap_mean": 0,
+      "ga_gap_max": 0,
+      "occupied_steps": 192,
+      "adaptive_eligible_pct": null
+    },
+    {
+      "seed": 23,
+      "method": "ours",
+      "days": 3,
+      "fan_wh_day": 254.66666666666666,
+      "fan_epi_period_kwh_m2": 0.06366666666666666,
+      "mean_abs_tsv_proxy": 1.7255378840866638,
+      "mean_tsv_proxy": 1.7159061087395302,
+      "comfort_violation_pct": 59.375,
+      "acceptance_proxy_pct": 39.0625,
+      "controller_latency_ms_median": 3.568750000340515,
+      "controller_latency_ms_p95": 5.144099999597529,
+      "ga_gap_mean": 0.0013274276215213914,
+      "ga_gap_max": 0.0665384615384621,
+      "occupied_steps": 192,
+      "adaptive_eligible_pct": null
+    },
+    {
+      "seed": 47,
+      "method": "ours",
+      "days": 3,
+      "fan_wh_day": 275.3333333333333,
+      "fan_epi_period_kwh_m2": 0.06883333333333333,
+      "mean_abs_tsv_proxy": 1.3729142662217382,
+      "mean_tsv_proxy": 1.3596513429254067,
+      "comfort_violation_pct": 53.125,
+      "acceptance_proxy_pct": 46.35416666666667,
+      "controller_latency_ms_median": 3.5318500003995723,
+      "controller_latency_ms_p95": 5.151800000021467,
+      "ga_gap_mean": 0.0012951611994051853,
+      "ga_gap_max": 0.09325160635717333,
+      "occupied_steps": 192,
+      "adaptive_eligible_pct": null
+    }
+  ],
+  "skipped": [],
+  "limitations": [
+    "Uncalibrated one-node RC model; facade irradiance and wind-driven ventilation are proxies.",
+    "Air temperature approximates operative temperature; no radiant sensor, latent heat coupling or CFD.",
+    "ANN trained on synthetic generic occupant labels; no evidence of human generalization.",
+    "Comfort and acceptance derive from a related synthetic oracle; favorable results are not independent validation.",
+    "Ours and survey start from identical simulated survey data; a scripted preference change tests memory mechanically.",
+    "Constant one-hour weather/activity forecast; no guarantee of long-horizon energy optimality.",
+    "Adaptive reference excludes sleep and away; expert fallback explicitly handles those periods.",
+    "No ASHRAE, GRIHA or LEED certification and no autonomous physical device control."
+  ]
+}

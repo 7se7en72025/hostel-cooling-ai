@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "mode": "frozen actual-response replay, no new inference",
+  "identical_files_sha256": {
+    "trajectories.csv": "5f2d2a23bde6b4ccb89af23a683273994255d42d4d33efab9cc744c4b65adff7",
+    "sensitivity.csv": "a9b521f056d5bf2268404a583d8ac6e37d51521d9023697bb83224b2b75d34c5"
+  },
+  "scientific_comparison_metrics": "identical for all nine methods",
+  "language_outcomes": "identical for all 24 phrases and memory checks",
+  "excluded": "machine-dependent timings and explicit backend labels"
+}

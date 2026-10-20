@@ -1,47 +1,32 @@
-# Final presentation and viva walkthrough
+# Final project presentation and viva
 
-Aim for a 7-10 minute presentation with a 2-minute dashboard demonstration. Use the PDF report and exported chart as evidence. Keep `outputs/demo/dashboard.png` and `comparison-dashboard.png` as offline visual backups.
+The current presentation content is generated from the completed results in **outputs/study/PRESENTATION_NOTES.md** and **presentation_data.json**. The complete submission report is **Hostel_Cooling_Project_Report.pdf** in the same directory. Use those actual values, not historical v1 screenshots or offline results.
 
-## Suggested presentation sequence
+## Application walkthrough
 
-1. **Problem and scope (45 seconds):** Hostel students may want airflow while studying and quiet while sleeping. One project combines AI preference memory (F417) with room heat, airflow and solar effects (F423). This is a completed simulated computational pilot.
-2. **Research context (45 seconds):** Conversation-based thermal preference learning already exists. The local question concerns hostel fan/window/curtain decisions across activities. Avoid claiming the first conversational comfort system. Use the primary references in LITERATURE.md.
-3. **System (60 seconds):** Explicit student feedback updates an activity profile. Room physics estimates future conditions. Fuzzy comfort and a GA choose feasible controls. Evidence stays attached to each preference revision.
-4. **Building physics (60 seconds):** Explain C dT/dt = G(Tout-T)+Q. Fans add heat to the air but improve perceived comfort through airflow. Opening a window can heat a room if outside air is hotter. A curtain reduces modeled solar gain.
-5. **AI methods (60 seconds):** Show triangular fuzzy sets conceptually, the actual trained ANN baseline, and GA selection/crossover/mutation. Explain that exact enumeration audits the small action set. The default language parser is not an LLM; an optional Ollama backend accepts real local models.
-6. **Experimental design (45 seconds):** Seven days, three weather seeds, matched forcing and separate policy trajectories. The survey and proposed controller start with the same initial profile. A scripted preference change tests retained context. Describe all synthetic outcomes as proxies.
-7. **Results (60 seconds):** Open comparison.png or the table. Ours uses about 323.3 versus 448.0 Wh/day for the fixed schedule, a 27.8% fan-energy reduction. Comfort violations rise from about 53.7% to 53.9%, and mean absolute TSV also rises. This is a trade-off, so the no-comfort-penalty hypothesis is not established. Actual values and variability are in summary.json.
-8. **Live demonstration (2 minutes):** Follow the sequence below.
-9. **Limits and next step (45 seconds):** Synthetic oracle, assumed room properties, missing radiant/latent effects, untested live LLM and no actual acceptance trial. The next step is a consented, calibrated measured pilot.
+1. Run start.bat and open http://127.0.0.1:8765. Confirm the backend names Qwen3-4B and the participant alias is the intended profile.
+2. Choose studying, consent to memory if desired, and enter: `I prefer 27 C. I want airflow.` The model extracts grounded changes and retains its evidence.
+3. Choose sleeping and enter: `I prefer 29 C. Please keep the fan low when I sleep.` Both activity targets remain available after reload.
+4. Generate a recommendation, inspect the fan/window/curtain values, fuzzy sensation and GA audit, then advance 15 simulated minutes and recommend again.
+5. Enable raining and show the closed-window constraint. Choose learned routine mode and explain its predicted activity, confidence and source.
+6. In Pilot & data, select data/noisy_pilot.csv, validate it and calibrate/apply the fitted parameters. Explain the chronological train/test split and why fitted parameters can differ from the known generator.
+7. Compare controllers shows both course baselines, with an actual generic LLM policy. Open the full report and raw inference journal. Read energy and comfort together.
+8. Export the selected profile, then withdraw consent to erase its logical records. Do not erase another participant's records during a presentation.
 
-## Reliable live demonstration
+## Viva answers
 
-Start with `python -m hostel_cooling serve`, then open http://127.0.0.1:8765.
+**Where is the LLM?** Qwen3-4B-Q4_K_M runs locally through a pinned llama.cpp binary. The application and study issue actual schema-constrained requests. The model revision, file SHA256, prompts, responses and timings are recorded. No paid API or fake LLM score is required.
 
-1. Leave the initial 31 C room in study mode and generate a recommendation. Explain the control values and one-hour constant-weather forecast.
-2. Enable consent, then enter **I prefer 27 C. I want airflow.** while studying. The memory chips should show study target 27 C and airflow preferred.
-3. Switch to sleeping and enter **I prefer 29 C. I need quiet when sleeping.** Generate again and show the fan limit. Both activity targets remain in memory.
-4. Check Raining and generate again. The window must close regardless of comfort objective.
-5. Open Compare controllers and the research report. Explain the energy and comfort columns together. Use bundled results rather than waiting for a new benchmark during the presentation.
-6. In Pilot & data, select `data/synthetic_pilot.csv` and validate it. Explain provenance, sensor assumptions and the chronological calibration split.
-7. Export the demo memory, then erase and withdraw consent. The synthetic benchmark remains available.
+**Why does a fan add heat?** Its electrical power becomes sensible heat in the room model. Perceived cooling from air movement enters the comfort calculation separately. The fan does not remove room heat as an air conditioner would.
 
-Avoid calling benchmark acceptance an actual student acceptance rate. An Accept button records a separate self-report; it does not actuate a physical device or retrospectively change benchmark outcomes.
+**Why a GA for 24 actions?** It implements the course's GA method and permits direct quality auditing. Exhaustive search is simpler for this particular action set. The exact audit does not replace the returned GA result.
 
-## Likely viva questions
+**What did the ANN and routine model learn?** The ANN approximates synthetic comfort labels with a saved one-hidden-layer regressor. The routine model learns time/weekday activity counts with a separate chronological holdout. Their training datasets and validation evidence are saved, and synthetic results do not establish human generalization.
 
-**Why a GA for only 24 actions?** It meets the course's GA requirement and allows direct audit. Exhaustive search is a simpler production choice here. A larger control horizon could motivate population search.
+**What does the EPI mean?** Fan kWh divided by room floor area for the simulated trial period. It excludes other building electricity and makes no annual whole-building claim.
 
-**Where is the LLM?** `llm.py` contains a real Ollama HTTP adapter with schema output and validation. The submitted offline run uses an explicit phrase parser for reproducibility. A real model was not configured or benchmarked, so B4 has no fabricated score. Enabling it is documented in README.md.
+**Why is calibration error nonzero now?** The current study uses an independent noisy observation dataset and a separate known plant. The held-out error is evaluated without selecting parameters on test transitions. The older noiseless exact-recovery sample is only a software check.
 
-**What did the ANN learn?** It approximates a generic synthetic sensation function from temperature, humidity and airspeed. An independent synthetic holdout checks fit. It has no evidence of human generalization.
+**Does the project prove improved human comfort?** No. It completes the approved simulated computational project and reports actual model behavior plus synthetic room outcomes. The report includes trade-offs and every held-out language failure. A measured human trial would test external validity separately.
 
-**Why not claim improved comfort?** The fixed schedule has slightly fewer simulated violations in this run. The correct finding is an energy-comfort trade-off. The survey ablation shows the mechanical effect of memory updates under its scripted scenario.
-
-**Is this ASHRAE compliant?** No. The adaptive equation is a scoped reference with awake/study eligibility and air-temperature approximation. Sleep uses a documented fallback.
-
-**What does the EPI mean?** Fan kWh divided by 12 m2 for the simulated seven-day period. It excludes the rest of building electricity and makes no annual claim.
-
-**Why is calibration RMSE zero?** The noiseless synthetic sample uses the same equations as the fitting model, and its true parameters are in the search grid. This checks software recovery, not sensor or physical accuracy.
-
-**What remains?** Actual local-model evaluation, a measured sensor pilot, activity inference, independent comfort validation, uncertainty and weather forecasting, and eventually a larger randomized field study.
+**What can be reproduced without new model inference?** Recorded-response replay can reproduce requests whose hashes match the actual response journal. It is explicitly labeled replay and cannot invent an answer to a new request. Default application and study execution use the actual local model.

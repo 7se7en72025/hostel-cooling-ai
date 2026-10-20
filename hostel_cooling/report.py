@@ -2,46 +2,98 @@ import html
 from pathlib import Path
 
 SOURCES = [
-    ("EnergyPlus Engineering Reference: zone heat balance", "https://energyplus.readthedocs.io/en/stable/guides/engineering-reference/2.1-basis-for-the-zone-and-air-system-integration.html"),
-    ("CBE Thermal Comfort Tool: adaptive and elevated-air-speed context", "https://cbe.berkeley.edu/research/cbe-thermal-comfort-tool/"),
-    ("pythermalcomfort: adaptive model and applicability", "https://pythermalcomfort.readthedocs.io/en/latest/documentation/models.html"),
-    ("Ollama: structured outputs", "https://docs.ollama.com/capabilities/structured-outputs"),
+    (
+        "EnergyPlus Engineering Reference: zone heat balance",
+        "https://energyplus.readthedocs.io/en/stable/guides/engineering-reference/2.1-basis-for-the-zone-and-air-system-integration.html",
+    ),
+    (
+        "CBE Thermal Comfort Tool: adaptive and elevated-air-speed context",
+        "https://cbe.berkeley.edu/research/cbe-thermal-comfort-tool/",
+    ),
+    (
+        "pythermalcomfort: adaptive model and applicability",
+        "https://pythermalcomfort.readthedocs.io/en/latest/documentation/models.html",
+    ),
+    (
+        "Ollama: structured outputs",
+        "https://docs.ollama.com/capabilities/structured-outputs",
+    ),
 ]
 
 
-def write_report(summary, output):
+def _write_legacy_report(summary, output):
     out = Path(output)
     rows = summary["rows"]
     plot_available = False
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
+
         labels = [r["method"] for r in rows]
         colors = ["#167d64" if m == "ours" else "#a4b6c1" for m in labels]
         fig, axes = plt.subplots(1, 2, figsize=(12, 4.2), layout="constrained")
-        for ax, metric, title, ylabel in [(axes[0],"fan_wh_day","Fan electricity","Wh / day"),(axes[1],"comfort_violation_pct","Occupied comfort violations","% of occupied intervals")]:
-            ax.bar(labels, [r[metric] for r in rows], yerr=[r[metric+"_sd"] for r in rows], color=colors, capsize=3)
-            ax.set(title=title, ylabel=ylabel); ax.tick_params(axis="x",rotation=40); ax.spines[["top","right"]].set_visible(False)
-        fig.suptitle("SYNTHETIC SIMULATION | error bars: SD across weather seeds",fontsize=11)
-        fig.savefig(out/"comparison.png",dpi=170); fig.savefig(out/"comparison.svg");plt.close(fig)
-        svg_path = out/"comparison.svg"
-        svg_path.write_text("\n".join(line.rstrip() for line in svg_path.read_text(encoding="utf-8").splitlines())+"\n",encoding="utf-8")
+        for ax, metric, title, ylabel in [
+            (axes[0], "fan_wh_day", "Fan electricity", "Wh / day"),
+            (
+                axes[1],
+                "comfort_violation_pct",
+                "Occupied comfort violations",
+                "% of occupied intervals",
+            ),
+        ]:
+            ax.bar(
+                labels,
+                [r[metric] for r in rows],
+                yerr=[r[metric + "_sd"] for r in rows],
+                color=colors,
+                capsize=3,
+            )
+            ax.set(title=title, ylabel=ylabel)
+            ax.tick_params(axis="x", rotation=40)
+            ax.spines[["top", "right"]].set_visible(False)
+        fig.suptitle(
+            "SYNTHETIC SIMULATION | error bars: SD across weather seeds", fontsize=11
+        )
+        fig.savefig(out / "comparison.png", dpi=170)
+        fig.savefig(out / "comparison.svg")
+        plt.close(fig)
+        svg_path = out / "comparison.svg"
+        svg_path.write_text(
+            "\n".join(
+                line.rstrip()
+                for line in svg_path.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         plot_available = True
     except ImportError:
         pass
     escape = html.escape
-    body_rows = "".join(f'<tr><td>{escape(r["method"])}</td><td>{r["fan_wh_day"]:.1f}</td><td>{r["fan_epi_period_kwh_m2"]:.4f}</td><td>{r["mean_abs_tsv_proxy"]:.2f}</td><td>{r["comfort_violation_pct"]:.1f}%</td><td>{r["acceptance_proxy_pct"]:.1f}%</td><td>{r["controller_latency_ms_median"]:.2f}</td></tr>' for r in rows)
+    body_rows = "".join(
+        f'<tr><td>{escape(r["method"])}</td><td>{r["fan_wh_day"]:.1f}</td><td>{r["fan_epi_period_kwh_m2"]:.4f}</td><td>{r["mean_abs_tsv_proxy"]:.2f}</td><td>{r["comfort_violation_pct"]:.1f}%</td><td>{r["acceptance_proxy_pct"]:.1f}%</td><td>{r["controller_latency_ms_median"]:.2f}</td></tr>'
+        for r in rows
+    )
     limitations = "".join(f"<li>{escape(s)}</li>" for s in summary["limitations"])
-    methods = "".join(f'<li><b>{escape(r["method"])}</b>: {escape(r["label"])}.</li>' for r in rows)
-    skipped = "".join(f'<li>{escape(str(s))}</li>' for s in summary["skipped"])
-    sources = "".join(f'<li><a href="{u}">{escape(t)}</a></li>' for t,u in SOURCES)
+    methods = "".join(
+        f'<li><b>{escape(r["method"])}</b>: {escape(r["label"])}.</li>' for r in rows
+    )
+    skipped = "".join(f"<li>{escape(str(s))}</li>" for s in summary["skipped"])
+    sources = "".join(f'<li><a href="{u}">{escape(t)}</a></li>' for t, u in SOURCES)
     ours = next((r for r in rows if r["method"] == "ours"), None)
     fixed = next((r for r in rows if r["method"] == "fixed"), None)
-    finding = f'The preference controller used {ours["fan_wh_day"]:.1f} Wh/day, with {ours["comfort_violation_pct"]:.1f}% synthetic occupied comfort violations. Its fan electricity changed by {ours["fan_energy_change_vs_fixed_pct"]:+.1f}% relative to the fixed schedule. Comfort and energy must be assessed together; energy reduction alone does not establish success.' if ours else "The preference controller did not complete; review skipped methods before interpreting results."
+    finding = (
+        f'The preference controller used {ours["fan_wh_day"]:.1f} Wh/day, with {ours["comfort_violation_pct"]:.1f}% synthetic occupied comfort violations. Its fan electricity changed by {ours["fan_energy_change_vs_fixed_pct"]:+.1f}% relative to the fixed schedule. Comfort and energy must be assessed together; energy reduction alone does not establish success.'
+        if ours and fixed
+        else "The preference controller did not complete; review skipped methods before interpreting results."
+    )
+    if ours and not fixed:
+        finding = f'The preference controller used {ours["fan_wh_day"]:.1f} Wh/day with {ours["comfort_violation_pct"]:.1f}% synthetic comfort violations. This subset has no fixed-schedule reference.'
     if ours and fixed:
         finding += f' Against fixed settings, occupied violations changed by {ours["comfort_violation_pct"]-fixed["comfort_violation_pct"]:+.2f} percentage points and mean absolute TSV changed from {fixed["mean_abs_tsv_proxy"]:.2f} to {ours["mean_abs_tsv_proxy"]:.2f}. This run does not establish the no-comfort-penalty hypothesis.'
-    content = f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hostel cooling | Research report</title>
+    content = f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hostel cooling | Research report</title>
     <style>body{{font:16px/1.65 system-ui;color:#19332e;background:#f3f5f0;margin:0}}main{{max-width:1060px;margin:auto;padding:50px 30px}}h1{{font-size:46px;line-height:1.1;max-width:800px}}h2{{margin-top:40px}}.tag{{color:#a14824;font-weight:700;letter-spacing:1px}}table{{border-collapse:collapse;width:100%;font-size:13px;background:white}}td,th{{padding:10px;text-align:left;border-bottom:1px solid #dde4dc}}img{{width:100%}}code{{background:#e5eae2;padding:3px}}a{{color:#167d64}}.box{{background:#e1ece4;padding:22px;border-left:4px solid #167d64}}@media print{{body{{background:white}}main{{padding:0}}h2{{break-after:avoid}}tr,img{{break-inside:avoid}}}}</style><main>
     <div class="tag">CE F417 + CE F423 / SYNTHETIC COURSE PROTOTYPE</div><h1>Preference-aware cooling for student hostels</h1>
     <p>One project combining Applications of AI in Civil Engineering and Green Buildings and Energy Conservation. Controls: fan, window and curtain. Advisory software; no physical actuators.</p>
@@ -60,5 +112,53 @@ def write_report(summary, output):
     <h2>Limitations</h2><ul>{limitations}</ul>
     <h2>Pilot and ethics plan</h2><p>Collect at least seven consecutive days of 15-minute indoor/outdoor temperature, RH, facade solar/wind proxies, occupied activity, controls, fan power and optional TSV/accept-reject feedback. Obtain informed opt-in before storage, use pseudonymous IDs, allow export and deletion, and never infer sensitive traits. Calibrate UA and capacitance with chronological training data and report held-out one-step RMSE. Randomize controller periods in a later crossover study and analyze paired comfort and metered-energy outcomes. A 20-50 room deployment is outside the completed scope.</p>
     <h2>Reproduction</h2><p><code>python -m hostel_cooling experiment --days 7 --seeds 11 23 47</code></p><p>Raw exports: summary.json, comparison.csv, runs.csv, trajectories.csv and conversation_evidence.json. See README.md, docs/METHODS.md and docs/PILOT_PROTOCOL.md in the repository.</p>
-    <h2>Sources and design context</h2><p>The supplied F417 and F423 proposal PDFs define the project scope. The simplified equations are this project's implementation, informed by the sources below; they do not reproduce a certified implementation.</p><ul>{sources}</ul><p>References checked 20 October 2026.</p></main></html>'''
-    (out/"report.html").write_text(content, encoding="utf-8")
+    <h2>Sources and design context</h2><p>The supplied F417 and F423 proposal PDFs define the project scope. The simplified equations are this project's implementation, informed by the sources below; they do not reproduce a certified implementation.</p><ul>{sources}</ul><p>References checked 20 October 2026.</p></main></html>"""
+    (out / "report.html").write_text(content, encoding="utf-8")
+
+
+def write_report(summary, output):
+    _write_legacy_report(summary, output)
+    if "language_evaluation" not in summary:
+        return
+    out = Path(output)
+    escape = html.escape
+    rows = summary["rows"]
+    language = summary["language_evaluation"]
+    cal = summary["calibration"]
+    result_rows = "".join(
+        f'<tr><td>{escape(r["label"])}</td><td>{r["fan_wh_day"]:.1f}</td><td>{r["mean_abs_tsv_proxy"]:.2f}</td><td>{r["comfort_violation_pct"]:.1f}%</td><td>{r["acceptance_proxy_pct"]:.1f}%</td></tr>'
+        for r in rows
+    )
+    files = (
+        "summary.json",
+        "runs.csv",
+        "trajectories.csv",
+        "llm_inference.jsonl",
+        "language_evaluation.json",
+        "calibration.json",
+        "paired_comparisons.csv",
+        "sensitivity.csv",
+    )
+    links = " ".join(f'<a href="/evidence/{name}">{name}</a>' for name in files)
+    source_links = "".join(
+        f'<li><a href="{url}">{escape(title)}</a></li>' for title, url in SOURCES
+    )
+    content = f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Completed hostel cooling study</title>
+    <style>body{{font:16px/1.65 system-ui;color:#213d31;background:#f4f6ef;margin:0}}main{{max-width:1080px;margin:auto;padding:48px 28px}}h1{{font:46px/1.1 Georgia;max-width:900px}}h2{{margin-top:38px}}a{{color:#27684f}}.evidence{{background:#e4eddf;padding:20px;border-left:4px solid #27684f}}table{{width:100%;border-collapse:collapse;font-size:13px;background:white}}td,th{{padding:12px;text-align:left;border-bottom:1px solid #dce4d6}}img{{width:100%;height:auto}}.downloads a{{display:inline-block;margin:8px 15px 8px 0}}@media print{{body{{background:white}}main{{padding:0}}tr,img{{break-inside:avoid}}}}</style><main>
+    <p>CE F417 + CE F423 / FINAL SIMULATED RESEARCH PROJECT</p><h1>Preference-aware cooling for student hostels</h1><p><a href="/report.pdf">Download the full submission PDF</a></p>
+    <div class="evidence"><b>Completed computational scope</b><p>Actual Qwen3-4B transformer inference, persistent activity preferences, trained neural and routine models, noisy-data calibration, complete course baseline sets and reproducible evidence. Room and occupant outcomes remain explicitly simulated.</p></div>
+    <h2>Research design</h2><p>The study runs {summary["days_per_seed"]} days for each of {len(summary["seeds"])} weather seeds. Room physics advances every 15 minutes. All {len(rows)} controllers choose actions on the same {summary["control_interval_minutes"]}-minute cadence. Each policy evolves its own closed-loop room state under common weather and constraints.</p>
+    <h2>Actual local language inference</h2><p>Model: {escape(summary["preference_backend"])}. Structured extractions require original-message evidence quotes and validated values. Study prompts, responses, usage and timings are preserved. Matching requests can reuse labeled cached records. Recorded-response replay cannot generate a new answer.</p>
+    <p>Held-out language benchmark: {language["n"]} phrases, {language["exact_match_accuracy"]*100:.1f}% exact-match accuracy and field F1 {language["field_f1"]:.3f}. All successes, misses and rejected invalid preferences remain available.</p>
+    <p>The benchmark measures raw extraction without human correction. The application shows proposed preference changes for explicit confirmation or discard before saving. Preview leaves memory unchanged, and confirmation rechecks consent and the profile revision.</p>
+    <h2>Calibrated room model</h2><p>Fourteen days of noisy synthetic observations fit the controller model. Training and test transitions are chronological and separate. Held-out RMSE: {cal["test_rmse_c"]:.3f} C, versus {cal["persistence_test_rmse_c"]:.3f} C for persistence. The fitted conductance differs from the known plant value, illustrating parameter identifiability and noise limitations.</p><img src="/evidence/calibration.png" alt="Chronological calibration holdout error">
+    <h2>Baseline comparisons</h2><img src="/comparison.png" alt="Fan electricity and occupied comfort violations"><div style="overflow:auto"><table><thead><tr><th>Controller</th><th>Fan Wh/day</th><th>Mean |TSV| proxy</th><th>Violations</th><th>Acceptance proxy</th></tr></thead><tbody>{result_rows}</tbody></table></div>
+    <p>F417 compares expert rules, adaptive comfort, ANN, generic LLM and the proposed method. F423 compares fixed passive settings, adaptive comfort, room physics, generic LLM and the proposed method. Survey and no-physics variants isolate retained context and forecast effects.</p>
+    <h2>Closed-loop behavior</h2><img src="/trajectories.png" alt="Matched fixed, generic LLM and proposed-controller room trajectories">
+    <h2>Objective sensitivity</h2><img src="/sensitivity.png" alt="Fan energy versus synthetic comfort under predeclared energy weights"><p>The sweep reports all six predeclared energy weights. It illustrates trade-offs and does not retrospectively select a winning test condition.</p>
+    <h2>What the findings establish</h2><p>The results establish functioning software, actual local model behavior and an auditable simulated comparison. Comfort and acceptance derive from a synthetic occupant oracle related to the modeling assumptions. They do not establish measured savings or a human preference-learning benefit. Paired t intervals across three weather seeds are exploratory scenario summaries.</p>
+    <p>EPI covers fan kWh per floor area during the simulated period. It excludes other building energy and makes no annual or certification claim. Physical actuators, measured field outcomes and multi-room human deployment are outside the approved simulated scope.</p>
+    <h2>Evidence downloads</h2><div class="downloads">{links}</div>
+    <h2>Sources</h2><ul>{source_links}<li><a href="https://huggingface.co/Qwen/Qwen3-4B-GGUF">Official Qwen3-4B model</a></li><li><a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md">llama.cpp schema-constrained server</a></li></ul>
+    <p>Source code, model artifacts, interval data, tests, setup scripts and the full PDF accompany the study. The supplied course proposals define the combined question and in-course scope.</p></main></html>"""
+    (out / "report.html").write_text(content, encoding="utf-8")

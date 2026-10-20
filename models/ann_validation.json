@@ -1,0 +1,7 @@
+{
+  "data": "synthetic iid holdout, not human votes",
+  "train_n": 2000,
+  "test_n": 400,
+  "mae_tsv": 0.14815556202139743,
+  "seed": 1701
+}

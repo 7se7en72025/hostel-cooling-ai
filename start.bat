@@ -1,4 +1,8 @@
 @echo off
 cd /d "%~dp0"
-python -m hostel_cooling serve
+if exist ".venv\Scripts\python.exe" (
+  ".venv\Scripts\python.exe" -m hostel_cooling serve
+) else (
+  python -m hostel_cooling serve
+)
 pause

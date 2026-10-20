@@ -3,7 +3,12 @@ import math
 
 
 def number(value, low, high, name):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not low <= value <= high:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or not low <= value <= high
+    ):
         raise ValueError(f"{name} must be a finite number between {low} and {high}")
     return float(value)
 
@@ -39,8 +44,14 @@ class Room:
     fan_speed_ms: tuple = (0.1, 0.4, 0.8, 1.2)
 
     def __post_init__(self):
-        for name, lo, hi in [("area_m2", 4, 100), ("height_m", 2, 5), ("ua_w_k", 1, 500),
-                             ("capacity_j_k", 100_000, 50_000_000), ("window_m2", .1, 15), ("glazing_g", .05, 1)]:
+        for name, lo, hi in [
+            ("area_m2", 4, 100),
+            ("height_m", 2, 5),
+            ("ua_w_k", 1, 500),
+            ("capacity_j_k", 100_000, 50_000_000),
+            ("window_m2", 0.1, 15),
+            ("glazing_g", 0.05, 1),
+        ]:
             number(getattr(self, name), lo, hi, name)
         if self.orientation not in ("north", "south", "east", "west"):
             raise ValueError("orientation must be north/south/east/west")
@@ -68,9 +79,16 @@ class Conditions:
     window_allowed: bool = True
 
     def __post_init__(self):
-        for name, lo, hi in [("indoor_c", 5, 50), ("outdoor_c", -10, 55), ("rh", 1, 100),
-                             ("outdoor_rh", 1, 100), ("solar_w_m2", 0, 1400), ("wind_ms", 0, 15),
-                             ("hour", 0, 24), ("running_mean_c", -10, 45)]:
+        for name, lo, hi in [
+            ("indoor_c", 5, 50),
+            ("outdoor_c", -10, 55),
+            ("rh", 1, 100),
+            ("outdoor_rh", 1, 100),
+            ("solar_w_m2", 0, 1400),
+            ("wind_ms", 0, 15),
+            ("hour", 0, 24),
+            ("running_mean_c", -10, 45),
+        ]:
             number(getattr(self, name), lo, hi, name)
         if self.activity not in ("study", "sleep", "away"):
             raise ValueError("activity must be study, sleep, or away")
@@ -96,13 +114,25 @@ class Preference:
         return asdict(self)
 
     def patched(self, patch):
-        allowed = {"target_c", "tolerance_c", "sleep_max_fan", "noise_weight", "energy_weight", "study_airflow", "activity_targets"}
+        allowed = {
+            "target_c",
+            "tolerance_c",
+            "sleep_max_fan",
+            "noise_weight",
+            "energy_weight",
+            "study_airflow",
+            "activity_targets",
+        }
         if not isinstance(patch, dict) or set(patch) - allowed:
             raise ValueError("unsupported preference fields")
         p = replace(self, activity_targets=dict(self.activity_targets))
         for key, value in patch.items():
             if key == "activity_targets":
-                if not isinstance(value, dict) or set(value) - {"study", "sleep", "away"}:
+                if not isinstance(value, dict) or set(value) - {
+                    "study",
+                    "sleep",
+                    "away",
+                }:
                     raise ValueError("invalid activity targets")
                 for a, t in value.items():
                     p.activity_targets[a] = number(t, 20, 34, "target")
@@ -115,12 +145,21 @@ class Preference:
                     raise ValueError("sleep_max_fan must be 0..3")
                 p.sleep_max_fan = value
             else:
-                lo, hi = {"target_c": (20, 34), "tolerance_c": (.5, 4), "noise_weight": (0, 3), "energy_weight": (0, 3)}[key]
+                lo, hi = {
+                    "target_c": (20, 34),
+                    "tolerance_c": (0.5, 4),
+                    "noise_weight": (0, 3),
+                    "energy_weight": (0, 3),
+                }[key]
                 setattr(p, key, number(value, lo, hi, key))
         return p
 
 
 def legal_actions(c, p):
-    windows = (0,) if c.rain or c.poor_air or not c.window_allowed else (0, .5, 1)
-    fans = (0,) if c.activity == "away" else range(1 + (p.sleep_max_fan if c.activity == "sleep" else 3))
+    windows = (0,) if c.rain or c.poor_air or not c.window_allowed else (0, 0.5, 1)
+    fans = (
+        (0,)
+        if c.activity == "away"
+        else range(1 + (p.sleep_max_fan if c.activity == "sleep" else 3))
+    )
     return [Action(f, w, s) for f in fans for w in windows for s in (0, 1)]

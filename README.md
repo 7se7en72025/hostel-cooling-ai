@@ -1,93 +1,122 @@
-# Hostel Cooling Lab
+# Hostel Cooling Project
 
-One project for **CE F417: Applications of AI in Civil Engineering** and **CE F423: Green Buildings and Energy Conservation**. It combines preference memory, fuzzy comfort, a room heat/moisture model and a genetic optimizer to suggest fan, window and curtain settings.
+Complete simulated research project for **CE F417: Applications of AI in Civil Engineering** and **CE F423: Green Buildings and Energy Conservation**.
 
-**Evidence status: simulated course prototype.** The bundled data, comfort votes and acceptance rates are synthetic. Actual student feedback collected through the dashboard stays separate. The default natural-language component is an explicit-phrase parser, not an LLM. A real Ollama adapter is included but its live-model behavior has not been evaluated here. The generic LLM baseline is marked unavailable in the submitted benchmark.
+The system uses an **actual locally running Qwen3-4B transformer**, persistent activity-specific preferences, a calibrated RC room model, fuzzy comfort and a genetic optimizer to recommend fan, window and curtain settings. It includes saved trained models and both courses' complete baseline sets, including the actual generic LLM baseline.
 
-## Run the demo
+The approved study uses simulated room and occupant data. Model inference, training, calibration, application behavior and exported computations are real. Synthetic comfort/acceptance outcomes are not presented as measured student results.
 
-Requires Python 3.11+.
+## Start the complete application
+
+On this prepared machine, run **start.bat** or:
 
 ```powershell
-cd C:\Users\RAIYYAN\Desktop\projects\hostel-cooling-ai
-python -m pip install -r requirements.txt
 python -m hostel_cooling serve
 ```
 
-Open **http://127.0.0.1:8765**. On Windows, `start.bat` also starts the server after dependencies are installed. The app serves locally and loads no external fonts, scripts or assets.
+Open **http://127.0.0.1:8765**. The server starts or reuses the pinned local transformer automatically. No API key or paid service is required.
 
-1. Choose studying, sleeping or away and adjust the room conditions.
-2. Generate a recommendation. Inspect its forecast, energy and GA optimality gap.
-3. Optionally consent to local storage. Enter `I prefer 27 C. I want airflow.` while studying.
-4. Switch to sleeping and enter `I prefer 29 C. I need quiet when sleeping.` Study preferences remain in memory.
-5. Generate again. Simulate a 15-minute step, or record an actual optional accept/decline vote.
-6. Open **Compare controllers** for the bundled experiment and report. **Pilot & data** supports CSV validation, export and erasure.
-
-The dashboard represents one pseudonymous local participant. It is not a multi-user deployment or sensor acquisition service. Consent revocation erases that participant's profile, evidence, saved suggestions and self-reports. Synthetic benchmark results remain available.
-
-## Reproduce the results
+For a fresh Windows checkout with Python 3.11+, run **setup.bat** once. It creates a virtual environment, installs the recorded dependencies, downloads and verifies the portable inference runtime and approximately 2.5 GB model, and trains the smaller models. The default Vulkan build can use compatible GPUs. A CPU setup is also available:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Acceleration cpu
+```
+
+Model weights, binaries and private participant records stay in the ignored runtime directory. No system-wide model installation is required. Other operating systems can run llama.cpp externally and set COOLING_LLM_URL, or use the supported Ollama adapter.
+
+## What is implemented
+
+- Actual local transformer requests with constrained JSON, exact-message evidence quotes and validated preference updates.
+- Separate participant aliases, consent, persistent activity targets, evidence history, suggestions, self-reports, export and erasure.
+- A saved activity routine learner with confidence and explicit synthetic-prior/personal-history provenance.
+- Exact constant-forcing 1R1C heat integration, moisture balance, ventilation/solar proxies and separate perceived fan cooling.
+- Chronological noisy-data calibration, held-out prediction error and an actual persistence comparison.
+- Fuzzy comfort scoring, GA selection/crossover/mutation, legal-action constraints and exhaustive optimality auditing.
+- A trained and serialized neural comfort model, its source dataset and independent synthetic holdout.
+- Both course comparison sets, survey/no-physics ablations, paired weather-seed contrasts and a predeclared objective-weight sweep.
+- Complete request/response journals, reproducible data, submission report and executable verification scripts.
+
+Physical sensors and actuators are outside the chosen simulated scope. The application never pretends to control a real room.
+
+## Use the application
+
+Choose a pseudonymous profile alias and consent if you want memory or data processing. Different profiles keep separate preferences and observations. Recommendations with generic preferences remain available without consent.
+
+Select study, sleep, away or learned routine mode. Enter current room conditions. Ask for a recommendation, inspect its controls and forecast, and optionally simulate the next 15 minutes. The actual local model interprets natural-language preferences, then the app shows its proposed changes for review. Confirm to save or discard and rephrase. Nothing is saved during preview. Unsupported or invalid extractions leave the profile unchanged.
+
+Pilot & data can validate a CSV, calibrate its room parameters and apply them to the current profile. It also exports and erases that profile's stored records. Actual optional accept/decline votes stay separate from synthetic benchmark outcomes.
+
+Compare controllers displays the completed study and links to its submission PDF and raw evidence. The Run complete study button starts the full actual-model pipeline asynchronously; it is not an offline-rule substitute.
+
+## Reproduce the full project
+
+```powershell
+python -m hostel_cooling setup-model
+python -m hostel_cooling study --days 7 --seeds 11 23 47
 python -m unittest discover -s tests -v
-python -m hostel_cooling experiment --days 7 --seeds 11 23 47
-python -m hostel_cooling sample-data
-python -m hostel_cooling validate data/synthetic_pilot.csv
-python -m hostel_cooling calibrate data/synthetic_pilot.csv
+python tools/verify_submission.py
 ```
 
-`outputs/demo/report.html` is the complete research report. `outputs/demo/Hostel_Cooling_Project_Report.pdf` is the six-page companion for submission. `summary.json`, `comparison.csv`, `runs.csv`, `trajectories.csv` and `conversation_evidence.json` preserve the data behind it. `comparison.png` and `.svg` are exportable figures. Energy and control trajectories reproduce for the same seeds. Runtime-dependent latency measurements vary.
+**run-study.bat** also runs the complete study. Model inference is the main runtime cost. Matching requests can reuse explicitly labeled cached actual model responses. Controller latency is recorded separately from preference extraction. The response journal distinguishes generated results from cache hits.
 
-The submitted 7-day, 3-seed run uses eight policy variants, including an explicitly labeled offline diagnostic and a survey ablation. The proposed controller consumes less fan electricity than the fixed schedule, with slightly higher simulated comfort violations. The study **does not establish energy savings without a comfort penalty**. See the exported data for exact values and variability.
+The pipeline trains/saves models, generates a separate 14-day noisy pilot, calibrates the controller on chronological training data, compares nine methods over seven days and three weather seeds at a common hourly control cadence, evaluates 24 held-out language phrases, runs six predeclared energy weights, and produces the report.
 
-`outputs/calibration.json` recovers the known UA and capacitance from the noiseless synthetic sample. Zero RMSE is expected when the generator and fitting equations match. It says nothing about field accuracy.
-
-## Connect a real local LLM
-
-Install Ollama separately and download a model appropriate for your machine. Set `OLLAMA_MODEL` to its actual installed name. No model or API key is bundled, and no paid API is called by default.
+To reproduce the frozen submitted results quickly without downloading the large transformer, use its recorded actual responses:
 
 ```powershell
-$env:OLLAMA_MODEL = 'your-installed-model-name'
-$env:OLLAMA_HOST = 'http://127.0.0.1:11434'
-python -m hostel_cooling serve --llm
+python -m hostel_cooling study --backend replay --output build/replay-study
+python tools/verify_replay.py
 ```
 
-This sends consented conversation text to the configured endpoint. The adapter requests JSON-schema output, validates every change, and surfaces failures without silently replacing them with fake LLM output. A configured remote `OLLAMA_HOST` changes where messages go, so select the endpoint knowingly.
+Replay is explicitly labeled and refuses requests absent from the recorded journal. The separately executed replay reproduced trajectories and sensitivity files byte for byte, all nine methods' scientific metrics and every language outcome. Timings and backend labels are excluded from that equality check.
 
-To evaluate an actual generic LLM policy and use real LLM preference extraction:
+## Submission and evidence
 
-```powershell
-python -m hostel_cooling experiment --llm --days 1 --seeds 11 --output outputs/llm_trial
-```
+The current final outputs are in **outputs/study/**. Earlier v1 offline results under outputs/demo are historical artifacts and are not the completed submission.
 
-This can make many model requests. Failed runs are discarded and reported, rather than included as completed comparisons. The dashboard's Run comparison button always runs the labeled offline benchmark. The generic LLM policy receives current conditions and feasible actions but no conversation memory or physics forecast.
-
-## Project layout
-
-| Path | Purpose |
+| Output | Content |
 | --- | --- |
-| `hostel_cooling/domain.py` | Validated room, state, preferences and feasible actions |
-| `physics.py`, `comfort.py` | Analytical 1R1C model, moisture balance, fuzzy and adaptive models |
-| `preferences.py`, `llm.py` | Consent-gated SQLite memory, offline and Ollama backends |
-| `optimizer.py`, `policies.py`, `ann.py` | GA, baselines and trained neural regressor |
-| `experiment.py`, `pilot.py`, `report.py` | Simulation, CSV validation, calibration and reporting |
-| `server.py`, `web/` | Local dashboard and JSON endpoints |
-| `tests/` | Physical invariants, constraints, persistence, data and adapter checks |
-| `docs/` | Methods, research context, pilot protocol and presentation walkthrough |
-| `data/` | Clearly labeled synthetic pilot and data dictionary |
-| `outputs/` | Reproducible synthetic evidence and report |
+| Hostel_Cooling_Project_Report.pdf | Complete submission report |
+| report.html | Browser report with figures and evidence links |
+| summary.json / comparison.csv | Aggregate results and study metadata |
+| runs.csv / trajectories.csv | Per-seed outcomes and every closed-loop control interval |
+| llm_inference.jsonl | Actual transformer prompts, responses, model hashes, usage and timings |
+| conversation_evidence.json | Scripted preference changes and actual extraction results |
+| language_evaluation.json | All 24 held-out phrase outcomes, including failures |
+| calibration.json | Estimated room parameters and untouched chronological holdout error |
+| paired_comparisons.csv | Matched-seed differences and exploratory intervals |
+| sensitivity.csv | All six declared objective-weight conditions |
+| submission_verification.json | Required-baseline, raw-energy and constraint checks |
+| reproducibility_verification.json | Independent frozen-response reproduction checks |
+| presentation_data.json / PRESENTATION_NOTES.md | Sixteen-slide presentation content and viva notes |
 
-## Scope and limitations
+**models/** contains saved ANN weights, activity counts, training data, validation results and the training curve. **data/** contains the synthetic observation data, its known generator/noise metadata and the fixed language benchmark. The source proposals define the combined course scope; docs/METHODS.md maps each requirement to implementation.
 
-The model uses assumed room properties, facade solar and ventilation proxies, and air temperature as an operative-temperature proxy. It omits surface radiation, spatial stratification, latent thermal coupling and condensation. Fan power heats the room; perceived fan cooling enters the comfort model separately. The adaptive reference is restricted to eligible awake/study conditions, with an explicitly labeled rule fallback elsewhere.
+## Course baselines
 
-EPI is **fan electricity in kWh divided by floor area over the simulated period**. It is not annual whole-building EPI. GRIHA/LEED names in the proposal describe course context, not certification or implemented rating rules. No physical devices are actuated. A measured, consented pilot and a 20-50 room deployment remain future work.
+| Course | Baseline set |
+| --- | --- |
+| CE F417 | Expert rules, scoped adaptive reference, trained ANN, actual generic LLM, proposed preference + physics + GA |
+| CE F423 | Fixed schedule, scoped adaptive reference, room physics only, actual generic LLM, proposed preference + physics + GA |
 
-Research sources and project-to-course mapping are in `docs/METHODS.md` and `docs/LITERATURE.md`.
+The survey ablation holds the initial profile fixed. The no-physics ablation retains language memory while omitting room lookahead. The generic LLM receives current measurements and feasible control values, without personal history or a numerical RC forecast. All methods share explicit safety/availability constraints and a common decision cadence.
 
-## Presentation and optional development checks
+## Interpretation
 
-`docs/DEMO_SCRIPT.md` provides a 7-10 minute presentation sequence, live-demo steps and viva answers. The screenshots and chart in `outputs/demo/` provide offline visual backups. The project contains no fabricated live LLM or field-study results.
+The frozen 24-phrase benchmark achieved 17/24 exact matches (70.8%) without user correction. Every failure is retained. Automated research uses the raw extraction endpoint to measure this behavior. The application adds explicit review and confirmation before committing an interpretation, because quote grounding alone did not prevent all mistaken inferences.
 
-Install optional development dependencies with `python -m pip install -r requirements-dev.txt`. Rebuild the companion PDF with `python tools/build_report.py` after generating experiment results. For the optional browser smoke test, install a Chromium browser using `python -m playwright install chromium`, run the server, then run `python tests/browser_smoke.py`.
+The study reports energy and comfort together, including unfavorable outcomes. Fan EPI means fan kWh divided by floor area during the simulated period; it is not annual whole-building EPI. GRIHA/LEED course context does not imply a rating implementation or certification. The adaptive reference has a documented awake/study eligibility scope and a fallback elsewhere.
 
-The browser smoke script resets the dashboard's demo participant and erases its test feedback. Run it only against a disposable local demo, not a session containing real pilot records. The standard unit tests use temporary data and do not touch the dashboard profile.
+The fitted RC model and ANN remain simplified synthetic models. Low prediction error does not prove accurate physical parameters. Comfort and acceptance derive from an assumed numerical occupant, so neither establishes human benefit. Routine and language evaluation measure software behavior on declared synthetic datasets. A measured human study would answer a different empirical question.
+
+## Optional modes and development
+
+Use --backend offline only when explicitly testing the rule parser. The default local backend does not silently replace missing inference with offline rules. The Ollama adapter remains available through --backend ollama with OLLAMA_MODEL set to a real installed model.
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m playwright install chromium
+python tests/browser_smoke.py
+```
+
+Browser validation uses and erases a dedicated test alias rather than a participant's records. Unit tests use temporary files. GitHub CI runs the non-GPU software/model checks on Windows and Linux. Setup scripts and requirements-lock.txt preserve the tested software versions. Large model resources are pinned separately by revision, release and SHA256.
