@@ -1,0 +1,13 @@
+{
+  "unit_tests": 18,
+  "unit_status": "passed",
+  "browser": "Chromium headless desktop and 390px mobile",
+  "browser_status": "passed",
+  "javascript_errors": 0,
+  "pdf_pages": 6,
+  "pdf_visual_review": "all pages rendered and inspected",
+  "reproducibility": "two independent 7-day/3-seed runs; identical control trajectories and all non-timing metrics",
+  "trajectory_sha256": "b2354713858e92123a73260cba2e5661cffaeda6641047f8659e9ff953674c92",
+  "live_llm_tested": false,
+  "measured_pilot_completed": false
+}

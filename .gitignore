@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.env
+runtime/
+dist/
+*.log
+build/
+outputs/llm_trial/
+data/measured*/

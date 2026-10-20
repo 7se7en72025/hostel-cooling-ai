@@ -1,0 +1,64 @@
+"""Build the companion PDF from committed experiment evidence (optional reportlab)."""
+import json
+from pathlib import Path
+from xml.sax.saxutils import escape
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image
+
+ROOT=Path(__file__).resolve().parents[1]
+OUT=ROOT/'outputs/demo'
+GREEN=colors.HexColor('#27684f');INK=colors.HexColor('#233c32');MUTED=colors.HexColor('#65796b')
+styles=getSampleStyleSheet()
+styles.add(ParagraphStyle(name='Cover',fontName='Helvetica',fontSize=31,leading=36,textColor=INK,spaceAfter=20))
+styles.add(ParagraphStyle(name='Sub',fontName='Helvetica',fontSize=14,leading=21,textColor=MUTED,spaceAfter=18))
+styles.add(ParagraphStyle(name='Label',fontName='Helvetica-Bold',fontSize=9,leading=14,textColor=GREEN,spaceAfter=12))
+styles.add(ParagraphStyle(name='Body',fontName='Helvetica',fontSize=10,leading=15,textColor=INK,spaceAfter=10))
+styles.add(ParagraphStyle(name='Head',fontName='Helvetica-Bold',fontSize=21,leading=27,textColor=INK,spaceAfter=18))
+styles.add(ParagraphStyle(name='SmallHead',fontName='Helvetica-Bold',fontSize=12,leading=18,textColor=GREEN,spaceAfter=8,spaceBefore=10))
+styles.add(ParagraphStyle(name='Fine',fontName='Helvetica',fontSize=8,leading=12,textColor=MUTED,spaceAfter=7))
+styles.add(ParagraphStyle(name='Cell',fontName='Helvetica',fontSize=8,leading=11,textColor=INK))
+
+
+def p(text,style='Body'):return Paragraph(text,styles[style])
+def table(rows,widths):
+    data=[[p(escape(str(c)),'Cell') for c in row] for row in rows]
+    t=Table(data,colWidths=widths,repeatRows=1,hAlign='LEFT')
+    t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#e7eee3')),('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,-1),.4,colors.HexColor('#dbe4d5')),('TOPPADDING',(0,0),(-1,-1),9),('BOTTOMPADDING',(0,0),(-1,-1),9)]))
+    return t
+
+
+def footer(canvas,doc):
+    w,h=A4;canvas.saveState();canvas.setStrokeColor(colors.HexColor('#d9e2d4'));canvas.line(44,43,w-44,43)
+    canvas.setFont('Helvetica',7);canvas.setFillColor(MUTED);canvas.drawString(44,29,'HOSTEL COOLING LAB / CE F417 + CE F423 / SYNTHETIC PROTOTYPE')
+    canvas.drawRightString(w-44,29,f'{doc.page}');canvas.restoreState()
+
+
+def main():
+    s=json.loads((OUT/'summary.json').read_text())
+    rows={r['method']:r for r in s['rows']};ours,fixed,survey=rows['ours'],rows['fixed'],rows['survey']
+    delta=ours['comfort_violation_pct']-fixed['comfort_violation_pct']
+    save=-ours['fan_energy_change_vs_fixed_pct']
+    story=[p('COURSE PROJECT / 20 OCTOBER 2026','Label'),Spacer(1,30),p('Preference-aware cooling<br/>for student hostels','Cover'),p('Applications of AI in Civil Engineering<br/>Green Buildings and Energy Conservation','Sub'),p('CE F417 + CE F423<br/>Course instructor: Prof. Rajiv Gupta','Body'),Spacer(1,18),p('Evidence status','SmallHead'),p('Completed computational prototype with a simulated pilot. All benchmark weather, occupant preferences, comfort votes and acceptance outcomes are synthetic. No measured student trial or live LLM benchmark supports these results.'),p('Abstract','SmallHead'),p('The system combines activity-specific preference memory with a simplified room heat and moisture model. A fuzzy comfort score and genetic optimizer recommend fan, window and curtain settings. Fixed, expert, adaptive, neural and room-model baselines use the same synthetic conditions. A survey ablation tests whether later preference updates change control decisions.'),p('Main finding','SmallHead'),p(f'The proposed controller used {save:.1f}% less fan electricity than the fixed schedule, while occupied comfort violations changed by {delta:+.2f} percentage points. The experiment demonstrates a trade-off. It does not establish energy savings without a comfort penalty.'),p('Default language backend: an explicit-phrase parser. A validated Ollama adapter is included for optional future local-model runs.','Fine'),PageBreak()]
+    story += [p('Room physics and control methods','Head'),p('Model assumptions','SmallHead'),table([['Parameter','Illustrative value'],['Floor area / height','12 m2 / 3 m'],['Envelope conductance UA','45 W/K'],['Effective thermal capacitance','2 MJ/K'],['Glazing area / gain factor','2 m2 / 0.6'],['Orientation','West'],['Fan power levels','0, 18, 38, 65 W'],['Time step / forecast horizon','15 minutes / 60 minutes']],[245,260]),Spacer(1,16),p('Analytical heat balance','SmallHead'),p('C dT/dt = G (Tout - T) + Q<br/>G = UA + rho cp Vdot<br/>Q = solar gain + internal gains + fan power<br/>Tnext = Teq + (T - Teq) exp(-G dt/C), where Teq = Tout + Q/G'),p('A fan adds electrical heat to the room. Its perceived cooling enters the comfort model separately. Window flow can warm the room when outdoor air is hotter. A moisture balance uses outdoor humidity ratio and an assumed occupant source.'),p('Preference and optimization','SmallHead'),p('Activity targets, sleep fan limits, airflow preference and objective weights form the persistent profile. Five triangular fuzzy memberships yield a heuristic TSV proxy. The one-hour objective weighs sensation, violations, fan electricity, noise and switching.'),p('The discrete GA uses population 10 and eight generations, with tournament selection, elitism, crossover and mutation. Exhaustive enumeration audits up to 24 feasible actions. The returned GA result can remain suboptimal. Sleep, rain, outdoor-air and window-availability constraints define the legal action set.'),PageBreak()]
+    method_rows=[['Controller','Purpose']]+[[m,r['label']] for m,r in rows.items()]
+    story += [p('Synthetic experimental protocol','Head'),p(f'{s["days_per_seed"]} days per weather seed, with seeds {s["seeds"]}. Every controller starts from the same room state and sees identical forcing. Its actions evolve its own room state. Occupied comfort excludes away intervals.'),table(method_rows,[83,422]),Spacer(1,13),p('Controlled preference change','SmallHead'),p('The proposed controller and survey ablation receive identical initial explicit profiles. A scripted mid-trial change lowers the hidden study target by 1 C. Only a conversation reveals that update to the proposed controller. No direct access to the hidden occupant is available to the controller.'),p('ANN and LLM status','SmallHead'),p(f'The actual neural regressor trains on 2,000 synthetic samples and evaluates 400 independent synthetic IID holdout points. Holdout MAE is {s["ann_validation"]["mae_tsv"]:.3f} TSV units. This tests synthetic fit only. The generic LLM baseline is unavailable in the submitted run. The memoryless rule diagnostic is separate from that baseline.'),p('All simulated suggestions are applied, including proxy-declined ones. Acceptance therefore describes an occupant-oracle score under full compliance, rather than observed student behavior.','Fine'),PageBreak()]
+    result_rows=[['Method','Wh/day','Mean |TSV|','Violation %','Accept %']]
+    for m,r in rows.items():result_rows.append([m,f'{r["fan_wh_day"]:.1f}',f'{r["mean_abs_tsv_proxy"]:.2f}',f'{r["comfort_violation_pct"]:.1f}',f'{r["acceptance_proxy_pct"]:.1f}'])
+    story += [p('Results and interpretation','Head'),table(result_rows,[105,93,104,103,100]),Spacer(1,13)]
+    if (OUT/'comparison.png').exists():story.append(Image(str(OUT/'comparison.png'),width=505,height=177))
+    story += [p(f'Fan electricity: {ours["fan_wh_day"]:.1f} versus {fixed["fan_wh_day"]:.1f} Wh/day for the fixed schedule. Comfort violations: {ours["comfort_violation_pct"]:.1f}% versus {fixed["comfort_violation_pct"]:.1f}%. Mean absolute TSV: {ours["mean_abs_tsv_proxy"]:.2f} versus {fixed["mean_abs_tsv_proxy"]:.2f}.'),p(f'The survey ablation has {survey["comfort_violation_pct"]:.1f}% violations and {survey["acceptance_proxy_pct"]:.1f}% acceptance proxy, versus {ours["comfort_violation_pct"]:.1f}% and {ours["acceptance_proxy_pct"]:.1f}% for the proposed controller. The scripted change supports a software memory demonstration, not a human preference-learning claim.'),p('Energy performance index','SmallHead'),p(f'The proposed controller has {ours["fan_epi_period_kwh_m2"]:.4f} kWh/m2 of fan electricity over this seven-day trial. EPI excludes lighting, plug loads and whole-building energy. No annual extrapolation or building certification follows.'),p('Figure error bars show sample SD across weather seeds. Three weather seeds do not constitute three participants. Timings are controller-only, include the GA audit and vary by machine.','Fine'),PageBreak()]
+    story += [p('Research context and evidence limits','Head'),p('Research gap','SmallHead'),p('Prior work already studies personal thermal preferences, active feedback and LLM-assisted comfort systems. Recent 2026 abstracts also describe conversational preference learning. This project therefore claims a reproducible hostel-control prototype and explicit ablations, not invention of conversational comfort learning.'),p('The distinguishing study setting is low-energy fan, window and curtain control across study, sleep and away activities. Its proposed field question is whether retained preferences plus room physics improve actual accepted suggestions and metered fan energy. The current synthetic trial cannot answer that question.'),p('Hypothesis status','SmallHead'),table([['Hypothesis','Status'],['Conversation outperforms a one-time survey','Untested with humans. A scripted ablation checks the code path.'],['System notices activity routines','Explicit activity inputs implemented. No learned routine inference.'],['Students accept more suggestions','Oracle proxy only. Real self-reports remain separate.'],['Energy falls without reduced comfort','Not established. The current run shows a comfort-energy trade-off.']],[210,295]),Spacer(1,12),p('Limitations','SmallHead')]
+    for text in s['limitations'][:7]:story.append(p(escape(text),'Fine'))
+    story += [PageBreak(),p('Pilot plan and reproducibility','Head'),p('Measured pilot plan','SmallHead'),p('Obtain informed consent, calibrate sensors and collect at least seven days of interval-aligned indoor/outdoor temperature, RH, solar and wind proxies, activity and controls. Meter fan power per speed. Record actual optional thermal votes and accept/decline responses.'),p('The CSV loader validates ranges, consent, provenance and 15-minute spacing. Calibration selects UA and capacitance using the first 80% of transitions and reports held-out one-step temperature RMSE on the final 20%. The supplied noiseless synthetic data recovers the known generator parameters exactly. That recovery is a software check.'),p('Privacy and deployment','SmallHead'),p('The dashboard supports one local pseudonymous participant. Consent gates storage and optional LLM use. Export and withdrawal cover preferences, evidence, saved suggestions and self-reports. Runtime files stay outside Git. The system recommends controls without actuating devices. A 20-50 room field trial remains future work.'),p('Reproduction commands','SmallHead'),p('python -m unittest discover -s tests -v<br/>python -m hostel_cooling experiment --days 7 --seeds 11 23 47<br/>python -m hostel_cooling calibrate data/synthetic_pilot.csv<br/>python -m hostel_cooling serve'),p('Selected primary references','SmallHead')]
+    refs=[('EnergyPlus engineering heat balance','https://energyplus.readthedocs.io/en/stable/guides/engineering-reference/2.1-basis-for-the-zone-and-air-system-integration.html'),('Adaptive-model documentation and scope','https://pythermalcomfort.readthedocs.io/en/latest/documentation/models.html'),('Tekler et al. (2023), active preference learning','https://arxiv.org/abs/2309.09073'),('Yang, Siew and Joe-Wong (2024), LLM digital twin','https://arxiv.org/abs/2403.16809'),('Liu, Zhou and Li (2026), conversational preferences; abstract-level review','https://doi.org/10.1016/j.enbuild.2026.117181'),('Ollama structured outputs','https://docs.ollama.com/capabilities/structured-outputs')]
+    for title,url in refs:story.append(p(f'<link href="{url}" color="#27684f">{escape(title)}</link>','Fine'))
+    story.append(p('The supplied CE F417 and CE F423 proposal PDFs define the course scope. Full methods, literature context, CSV schema, source code and raw results accompany this report. References checked 20 October 2026.','Fine'))
+    doc=SimpleDocTemplate(str(OUT/'Hostel_Cooling_Project_Report.pdf'),pagesize=A4,rightMargin=44,leftMargin=44,topMargin=43,bottomMargin=57,title='Preference-aware cooling for student hostels',author='Hostel Cooling Lab',allowSplitting=1)
+    doc.build(story,onFirstPage=footer,onLaterPages=footer)
+    print(OUT/'Hostel_Cooling_Project_Report.pdf')
+
+
+if __name__=='__main__':main()

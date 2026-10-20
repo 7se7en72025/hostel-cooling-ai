@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hostel-cooling-ai"
+version = "1.0.0"
+description = "Preference-aware hostel cooling research prototype for CE F417 and CE F423"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.24,<3", "matplotlib>=3.7,<4"]
+
+[project.scripts]
+hostel-cooling = "hostel_cooling.cli:main"
+
+[tool.setuptools.package-data]
+hostel_cooling = ["web/*"]

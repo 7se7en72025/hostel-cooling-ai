@@ -1,0 +1,31 @@
+{
+  "provenance": "synthetic",
+  "rows": 672,
+  "train_transitions": 536,
+  "test_transitions": 135,
+  "split": "chronological 80/20; parameters selected on training only",
+  "selected_room": {
+    "area_m2": 12,
+    "height_m": 3,
+    "ua_w_k": 45,
+    "capacity_j_k": 2000000,
+    "window_m2": 2,
+    "glazing_g": 0.6,
+    "orientation": "west",
+    "fan_w": [
+      0,
+      18,
+      38,
+      65
+    ],
+    "fan_speed_ms": [
+      0.1,
+      0.4,
+      0.8,
+      1.2
+    ]
+  },
+  "train_rmse_c": 0.0,
+  "test_rmse_c": 0.0,
+  "warning": "One-step temperature fit only. Humidity, fan cooling effect, surface radiation and occupant preferences are not calibrated. Synthetic self-recovery is a software check, not physical validation."
+}
