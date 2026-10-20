@@ -111,6 +111,18 @@ def main():
             page.locator("[data-view=evidence]").click()
             page.locator("#results tr").first.wait_for()
             assert page.locator("#results tr").count() == 9
+            page.locator("#hypothesis-results tr").first.wait_for()
+            assert page.locator("#hypothesis-results tr").count() == 8
+            assert "Not supported" in page.locator("#hypothesis-results").inner_text()
+            assert api.get(URL + "/evidence/PRESENTATION_NOTES.md").status == 200
+            assert api.get(URL + "/evidence/hypothesis_assessment.json").status == 200
+            for artifact in (
+                "/report.pdf",
+                "/presentation.pptx",
+                "/presentation.pdf",
+                "/viva.pdf",
+            ):
+                assert api.get(URL + artifact).status == 200
             page.locator("#toast").evaluate(
                 "n => { n.style.transition='none'; n.classList.remove('visible'); }"
             )
@@ -177,6 +189,7 @@ def main():
                     "csv_calibration_applied": True,
                     "learned_activity_mode": True,
                     "preference_preview_confirm_discard": True,
+                    "all_eight_proposal_hypotheses": True,
                     "status": "passed",
                 },
                 indent=2,

@@ -1,0 +1,90 @@
+{
+  "pre_change_trajectories_identical": true,
+  "provenance": "Assessment of recorded simulated outcomes; no new inference or human data",
+  "target_recovery": [
+    {
+      "seed": 11,
+      "initial_survey_target_c": 28.5,
+      "changed_target_c": 27.5,
+      "extracted_target_c": 27.5,
+      "conversation_absolute_error_c": 0.0,
+      "unchanged_survey_absolute_error_c": 1.0
+    },
+    {
+      "seed": 23,
+      "initial_survey_target_c": 27.5,
+      "changed_target_c": 26.5,
+      "extracted_target_c": 26.5,
+      "conversation_absolute_error_c": 0.0,
+      "unchanged_survey_absolute_error_c": 1.0
+    },
+    {
+      "seed": 47,
+      "initial_survey_target_c": 28,
+      "changed_target_c": 27,
+      "extracted_target_c": 27,
+      "conversation_absolute_error_c": 0,
+      "unchanged_survey_absolute_error_c": 1.0
+    }
+  ],
+  "post_change_acceptance_difference_pp": 9.696969696969695,
+  "hypotheses": [
+    {
+      "id": "F417 H1",
+      "question": "Conversation captures preferences better than a one-time survey",
+      "verdict": "Mechanism supported in scripted cases; broader claim untested",
+      "evidence": "3/3 changed study targets exactly recovered. Unchanged survey target error: 1 C after the change.",
+      "limit": "Explicit numeric messages do not measure natural conversational coverage or survey burden."
+    },
+    {
+      "id": "F417 H2",
+      "question": "The model notices study, sleep and away routines",
+      "verdict": "Supported on the synthetic routine holdout",
+      "evidence": "Chronological routine accuracy 93.5%, majority baseline 36.6%.",
+      "limit": "Synthetic schedules; no student routine was observed."
+    },
+    {
+      "id": "F417 H3",
+      "question": "Updated preferences lead to more accepted suggestions",
+      "verdict": "Supported by the assumed acceptance proxy",
+      "evidence": "Ours minus survey: +4.76 percentage points across the trial; +9.70 after the scripted change.",
+      "limit": "Acceptance is a simulated occupant rule. Every suggested action applies regardless of acceptance."
+    },
+    {
+      "id": "F417 H4",
+      "question": "Energy use falls without lowering comfort",
+      "verdict": "Not supported in this configuration",
+      "evidence": "Versus fixed: fan energy -35.11%; occupied violations +2.38 percentage points.",
+      "limit": "No human non-inferiority margin or powered field study was conducted."
+    },
+    {
+      "id": "F423 H1",
+      "question": "Use less energy without reducing comfort",
+      "verdict": "Not supported in this configuration",
+      "evidence": "Fan energy decreases, but discomfort violations increase by 2.38 percentage points versus fixed.",
+      "limit": "The lower electricity outcome includes a comfort trade-off."
+    },
+    {
+      "id": "F423 H2",
+      "question": "Respond to sleep, study and away routines",
+      "verdict": "Implemented and software-verified",
+      "evidence": "Activity targets persist across context switches; away intervals use fan off; sleeping obeys the configured fan maximum.",
+      "limit": "The main controller trial uses observed synthetic activity. Learned auto mode is evaluated separately."
+    },
+    {
+      "id": "F423 H3",
+      "question": "Use room physics to make better suggestions",
+      "verdict": "Supported for discomfort under the no-physics ablation",
+      "evidence": "Ours minus no-physics: occupied violations -16.44 percentage points; fan electricity +145.7 Wh/day.",
+      "limit": "Lookahead improves modeled comfort at higher energy. This is a joint policy comparison, not a proof of physical accuracy."
+    },
+    {
+      "id": "F423 H4",
+      "question": "Improve the room energy performance index",
+      "verdict": "Supported for the trial-period fan EPI",
+      "evidence": "Ours 0.1696 versus fixed 0.2613 kWh/m2 over the seven-day period (-35.11%).",
+      "limit": "Fan-only period EPI excludes lighting, appliances and other building electricity. It is not annual whole-building EPI."
+    }
+  ],
+  "phase_comparison_note": "Before and after windows differ in duration and weather. Matched methods share forcing within each seed. These are descriptive synthetic contrasts, not participant statistics."
+}

@@ -212,8 +212,7 @@ def write_presentation_content(output_dir):
                 "unit": "Fan Wh/day",
             },
             "lines": [
-                "All six predeclared energy weights are reported",
-                "Same three seeds, three days per weight",
+                "Six declared weights; three seeds and three days per weight",
                 "Comfort outcomes accompany the energy curve in sensitivity.csv",
             ],
             "notes": "This sweep illustrates objective dependence. It does not select a winning weight after observing the test outcomes.",
@@ -240,6 +239,27 @@ def write_presentation_content(output_dir):
             ],
             "notes": "Preserve the distinction between completed software and unmeasured real-world benefit. The project reports unfavorable outcomes instead of manufacturing positive hypotheses.",
         },
+    ]
+    from .conclusions import assess_hypotheses
+
+    assessment = assess_hypotheses(out)
+    slides[-2:-2] = [
+        {
+            "title": course + " hypothesis findings",
+            "table": [["Hypothesis", "Finding", "Evidence"]]
+            + [
+                [h["id"], h["verdict"], h["evidence"]]
+                for h in assessment["hypotheses"]
+                if h["id"].startswith(course)
+            ],
+            "notes": "Original proposal hypotheses assessed against recorded synthetic outcomes. "
+            + " ".join(
+                h["id"] + ": " + h["limit"]
+                for h in assessment["hypotheses"]
+                if h["id"].startswith(course)
+            ),
+        }
+        for course in ("F417", "F423")
     ]
     (out / "presentation_data.json").write_text(
         json.dumps(

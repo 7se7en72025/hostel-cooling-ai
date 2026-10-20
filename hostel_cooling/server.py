@@ -150,6 +150,12 @@ def serve(port=8765, backend=None):
                         "paired_comparisons.csv",
                         "sensitivity.csv",
                         "validation.json",
+                        "hypothesis_assessment.json",
+                        "preference_change_phases.csv",
+                        "PRESENTATION_NOTES.md",
+                        "presentation_data.json",
+                        "reproducibility_verification.json",
+                        "submission_verification.json",
                     }
                     if name in {"calibration.png"} and (STUDY / name).is_file():
                         return self.send((STUDY / name).read_bytes(), kind="image/png")
@@ -175,6 +181,18 @@ def serve(port=8765, backend=None):
                     ),
                     "/trajectories.png": (STUDY / "trajectories.png", "image/png"),
                     "/sensitivity.png": (STUDY / "sensitivity.png", "image/png"),
+                    "/presentation.pptx": (
+                        STUDY / "Hostel_Cooling_Final_Presentation.pptx",
+                        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    ),
+                    "/presentation.pdf": (
+                        STUDY / "Hostel_Cooling_Final_Presentation.pdf",
+                        "application/pdf",
+                    ),
+                    "/viva.pdf": (
+                        STUDY / "Hostel_Cooling_Viva_Guide.pdf",
+                        "application/pdf",
+                    ),
                 }
                 if path in static and static[path][0].exists():
                     return self.send(static[path][0].read_bytes(), kind=static[path][1])

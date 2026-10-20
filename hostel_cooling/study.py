@@ -172,6 +172,9 @@ def finalize_study(output_dir, backend=None):
     )
     (out / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     analyze_study(out)
+    from .conclusions import assess_hypotheses
+
+    assess_hypotheses(out)
     from .analysis import model_figures
 
     model_figures(ROOT / "models", out)

@@ -6,6 +6,9 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 import sys
+import re
+import zipfile
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -31,6 +34,12 @@ def verify(output_dir=None):
         "Hostel_Cooling_Project_Report.pdf",
         "comparison.png",
         "trajectories.png",
+        "hypothesis_assessment.json",
+        "preference_change_phases.csv",
+        "PRESENTATION_NOTES.md",
+        "Hostel_Cooling_Final_Presentation.pptx",
+        "Hostel_Cooling_Final_Presentation.pdf",
+        "Hostel_Cooling_Viva_Guide.pdf",
     ]
     for name in required:
         assert (out / name).is_file() and (
@@ -88,6 +97,32 @@ def verify(output_dir=None):
     )
     assert language["n"] == 24 and len(language["cases"]) == 24
     assert language["memory_context_persistent"] and language["consent_erasure_passed"]
+    findings = json.loads(
+        (out / "hypothesis_assessment.json").read_text(encoding="utf-8")
+    )
+    assert len(findings["hypotheses"]) == 8
+    assert findings["pre_change_trajectories_identical"]
+    with zipfile.ZipFile(out / "Hostel_Cooling_Final_Presentation.pptx") as deck:
+        parts = deck.namelist()
+        slides = [n for n in parts if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)]
+        charts = [n for n in parts if re.fullmatch(r"ppt/charts/chart\d+\.xml", n)]
+        notes = [
+            n for n in parts if re.fullmatch(r"ppt/notesSlides/notesSlide\d+\.xml", n)
+        ]
+        workbooks = [
+            n for n in parts if n.startswith("ppt/embeddings/") and n.endswith(".xlsx")
+        ]
+        table_count = sum(
+            len(
+                ET.fromstring(deck.read(n)).findall(
+                    ".//{http://schemas.openxmlformats.org/drawingml/2006/main}tbl"
+                )
+            )
+            for n in slides
+        )
+        assert len(slides) == 18 and len(charts) == 3 and table_count == 5
+        assert len(notes) == 18 and len(workbooks) == 3
+        assert deck.testzip() is None
     for file in [
         "comfort_ann.npz",
         "routine_model.json",
@@ -108,6 +143,13 @@ def verify(output_dir=None):
         "trajectory_sha256": hashlib.sha256(
             (out / "trajectories.csv").read_bytes()
         ).hexdigest(),
+        "final_presentation": {
+            "editable_slides": len(slides),
+            "native_charts": len(charts),
+            "native_tables": table_count,
+            "speaker_notes": len(notes),
+        },
+        "hypotheses_assessed": len(findings["hypotheses"]),
     }
     (out / "submission_verification.json").write_text(
         json.dumps(result, indent=2), encoding="utf-8"

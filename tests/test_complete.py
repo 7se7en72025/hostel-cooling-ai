@@ -12,6 +12,35 @@ from hostel_cooling.routines import RoutineModel, train_synthetic_routines
 
 
 class CompleteProjectTests(unittest.TestCase):
+    def test_proposal_findings_match_frozen_trial_and_preserve_negative_result(self):
+        import shutil
+        from hostel_cooling.conclusions import assess_hypotheses
+
+        source = Path(__file__).resolve().parents[1] / "outputs/study"
+        with tempfile.TemporaryDirectory() as folder:
+            for name in (
+                "summary.json",
+                "conversation_evidence.json",
+                "trajectories.csv",
+            ):
+                shutil.copy2(source / name, Path(folder) / name)
+            result = assess_hypotheses(folder)
+            self.assertTrue(result["pre_change_trajectories_identical"])
+            hypotheses = {h["id"]: h for h in result["hypotheses"]}
+            self.assertEqual(len(hypotheses), 8)
+            self.assertEqual(
+                hypotheses["F417 H4"]["verdict"], "Not supported in this configuration"
+            )
+            self.assertAlmostEqual(
+                result["post_change_acceptance_difference_pp"], 9.696969696969695
+            )
+            self.assertTrue(
+                all(
+                    r["conversation_absolute_error_c"] == 0
+                    for r in result["target_recovery"]
+                )
+            )
+
     def test_reviewed_memory_requires_current_consent_and_context(self):
         with tempfile.TemporaryDirectory() as folder:
             memory = Memory(Path(folder) / "state.db")

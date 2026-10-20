@@ -1,8 +1,8 @@
 {
   "status": "passed",
   "unit_tests": {
-    "count": 26,
-    "passed": 26
+    "count": 27,
+    "passed": 27
   },
   "browser": {
     "engine": "Chromium headless",
@@ -14,7 +14,9 @@
     "rain_constraints": true,
     "csv_validation_and_calibration": true,
     "feedback_and_erasure": true,
-    "responsive_width_px": 390
+    "responsive_width_px": 390,
+    "all_eight_proposal_hypotheses": true,
+    "final_artifact_downloads": "all four returned HTTP 200"
   },
   "packaging": {
     "wheel_build": "passed",
@@ -23,17 +25,45 @@
     "installed_model_training": "passed"
   },
   "report": {
-    "pages": 12,
+    "pages": 14,
     "all_pages_rendered_and_visually_checked": true
   },
   "presentation_content": {
-    "slides": 16,
-    "editable_powerpoint_export": false,
+    "slides": 18,
+    "editable_powerpoint_export": true,
+    "native_charts": 3,
+    "native_tables": 5,
+    "speaker_notes": 18,
+    "rendered_by": "LibreOffice 26.2.6.3",
+    "all_slides_rendered_and_visually_checked": true,
     "artifacts": [
-      "presentation_data.json",
+      "Hostel_Cooling_Final_Presentation.pptx",
+      "Hostel_Cooling_Final_Presentation.pdf",
       "PRESENTATION_NOTES.md"
     ]
   },
   "reproduction": "Independent frozen actual-response replay; exact trajectories and sensitivity, all scientific metrics and language outcomes match.",
-  "scope": "Simulated room and occupant data; actual inference, training, calibration and software execution."
+  "scope": "Simulated room and occupant data; actual inference, training, calibration and software execution.",
+  "viva_guide": {
+    "questions": 34,
+    "pages": 8,
+    "all_pages_rendered_and_visually_checked": true
+  },
+  "final_artifacts": {
+    "Hostel_Cooling_Project_Report.pdf": {
+      "pages": 14,
+      "sha256": "ebdb6a3ba27d68aabc93e5b168498f163ebeb7fb6b81bd1241e0be7929dfa8be"
+    },
+    "Hostel_Cooling_Final_Presentation.pdf": {
+      "pages": 18,
+      "sha256": "732797bab7d22cd45884ff105e4fcd9e5b18aea49e136494ae321b27e4a97836"
+    },
+    "Hostel_Cooling_Viva_Guide.pdf": {
+      "pages": 8,
+      "sha256": "8d7a65639701c29f148a38c9e2c902dab5cdee5d5a47e60ad10e3fd83e973543"
+    },
+    "Hostel_Cooling_Final_Presentation.pptx": {
+      "sha256": "64dcfda85531dff5a355997ff5733062a83d0af1b4211993cc740eafc88843a4"
+    }
+  }
 }

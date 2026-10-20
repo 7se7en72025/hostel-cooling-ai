@@ -5,13 +5,17 @@ The current presentation content is generated from the completed results in **ou
 ## Application walkthrough
 
 1. Run start.bat and open http://127.0.0.1:8765. Confirm the backend names Qwen3-4B and the participant alias is the intended profile.
-2. Choose studying, consent to memory if desired, and enter: `I prefer 27 C. I want airflow.` The model extracts grounded changes and retains its evidence.
-3. Choose sleeping and enter: `I prefer 29 C. Please keep the fan low when I sleep.` Both activity targets remain available after reload.
+2. Choose studying, consent to memory if desired, and enter: `I prefer 27 C. I want airflow.` Review the interpretation, then confirm to save it. Preview alone leaves memory unchanged.
+3. Choose sleeping and enter: `I prefer 29 C. Please keep the fan low when I sleep.` Review and confirm. Both activity targets remain available after reload.
 4. Generate a recommendation, inspect the fan/window/curtain values, fuzzy sensation and GA audit, then advance 15 simulated minutes and recommend again.
 5. Enable raining and show the closed-window constraint. Choose learned routine mode and explain its predicted activity, confidence and source.
 6. In Pilot & data, select data/noisy_pilot.csv, validate it and calibrate/apply the fitted parameters. Explain the chronological train/test split and why fitted parameters can differ from the known generator.
 7. Compare controllers shows both course baselines, with an actual generic LLM policy. Open the full report and raw inference journal. Read energy and comfort together.
 8. Export the selected profile, then withdraw consent to erase its logical records. Do not erase another participant's records during a presentation.
+
+## Direct answers to the proposal hypotheses
+
+The final report and application contain all eight F417/F423 hypotheses, findings, evidence and limits. F417 H1 has a successful mechanical target-retention test, not evidence of general survey superiority. Routine inference is evaluated separately on synthetic schedules. Acceptance proxy improves relative to the unchanged survey after the scripted preference update. The energy-without-comfort-loss claim is not supported in this configuration. Physics improves modeled discomfort at an energy cost, and period fan EPI falls relative to fixed settings. These are completed computational findings, including the negative result.
 
 ## Viva answers
 

@@ -137,13 +137,36 @@ Source: calibration.json and noisy_pilot_metadata.json. Parameter selection neve
 
 ## 14. Objective-weight sensitivity
 
-- All six predeclared energy weights are reported
-- Same three seeds, three days per weight
+- Six declared weights; three seeds and three days per weight
 - Comfort outcomes accompany the energy curve in sensitivity.csv
 
 This sweep illustrates objective dependence. It does not select a winning weight after observing the test outcomes.
 
-## 15. Completed deliverables
+## 15. F417 hypothesis findings
+
+
+| Hypothesis | Finding | Evidence |
+| --- | --- | --- |
+| F417 H1 | Mechanism supported in scripted cases; broader claim untested | 3/3 changed study targets exactly recovered. Unchanged survey target error: 1 C after the change. |
+| F417 H2 | Supported on the synthetic routine holdout | Chronological routine accuracy 93.5%, majority baseline 36.6%. |
+| F417 H3 | Supported by the assumed acceptance proxy | Ours minus survey: +4.76 percentage points across the trial; +9.70 after the scripted change. |
+| F417 H4 | Not supported in this configuration | Versus fixed: fan energy -35.11%; occupied violations +2.38 percentage points. |
+
+Original proposal hypotheses assessed against recorded synthetic outcomes. F417 H1: Explicit numeric messages do not measure natural conversational coverage or survey burden. F417 H2: Synthetic schedules; no student routine was observed. F417 H3: Acceptance is a simulated occupant rule. Every suggested action applies regardless of acceptance. F417 H4: No human non-inferiority margin or powered field study was conducted.
+
+## 16. F423 hypothesis findings
+
+
+| Hypothesis | Finding | Evidence |
+| --- | --- | --- |
+| F423 H1 | Not supported in this configuration | Fan energy decreases, but discomfort violations increase by 2.38 percentage points versus fixed. |
+| F423 H2 | Implemented and software-verified | Activity targets persist across context switches; away intervals use fan off; sleeping obeys the configured fan maximum. |
+| F423 H3 | Supported for discomfort under the no-physics ablation | Ours minus no-physics: occupied violations -16.44 percentage points; fan electricity +145.7 Wh/day. |
+| F423 H4 | Supported for the trial-period fan EPI | Ours 0.1696 versus fixed 0.2613 kWh/m2 over the seven-day period (-35.11%). |
+
+Original proposal hypotheses assessed against recorded synthetic outcomes. F423 H1: The lower electricity outcome includes a comfort trade-off. F423 H2: The main controller trial uses observed synthetic activity. Learned auto mode is evaluated separately. F423 H3: Lookahead improves modeled comfort at higher energy. This is a joint policy comparison, not a proof of physical accuracy. F423 H4: Fan-only period EPI excludes lighting, appliances and other building electricity. It is not annual whole-building EPI.
+
+## 17. Completed deliverables
 
 - Working local application with actual transformer requests
 - Saved ANN and routine models, plus material and calibration tools
@@ -153,7 +176,7 @@ This sweep illustrates objective dependence. It does not select a winning weight
 
 The approved scope is a completed simulated course project. Physical sensors, metered human outcomes and a 20-50 room field study are separate empirical work.
 
-## 16. Limits and interpretation
+## 18. Limits and interpretation
 
 - One-node room physics omits radiant and spatial effects
 - Comfort labels and acceptance derive from assumed synthetic occupants

@@ -521,7 +521,37 @@ def build_report(output_dir):
             "https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md",
         ),
     ]
-    story += [p("11. References", "heading")]
+    from .conclusions import assess_hypotheses
+
+    assessment = assess_hypotheses(out)
+    for index, course in enumerate(("F417", "F423"), 11):
+        story += [
+            p(f"{index}. {course} hypothesis assessment", "heading"),
+            p(
+                "Each original proposal hypothesis is assessed against the recorded study. Support below is limited to the stated synthetic setting. A negative finding is a completed result."
+            ),
+            table(
+                [["Hypothesis", "Finding", "Evidence and interpretation"]]
+                + [
+                    [
+                        h["id"] + ": " + h["question"],
+                        h["verdict"],
+                        h["evidence"] + " " + h["limit"],
+                    ]
+                    for h in assessment["hypotheses"]
+                    if h["id"].startswith(course)
+                ],
+                [115, 125, 265],
+            ),
+            Spacer(1, 18),
+            p("Preference-change comparison", "subheading"),
+            p(
+                f"After the scripted target update, the conversation method has {assessment['post_change_acceptance_difference_pp']:+.2f} percentage points higher acceptance proxy than the unchanged survey. The pre-change trajectories are identical under the matched optimizer. The phase split and each seed's raw metrics are exported in preference_change_phases.csv."
+            ),
+            p(assessment["phase_comparison_note"], "small"),
+            PageBreak(),
+        ]
+    story += [p("13. References", "heading")]
     for title, url in refs:
         story.append(p(f'<link href="{url}" color="#27684f">{escape(title)}</link>'))
     story += [

@@ -412,6 +412,19 @@ async function loadResults() {
         el("p", `${s.method}: ${s.reason}`, "notice"),
       ),
     );
+    const hypotheses = await api("/evidence/hypothesis_assessment.json");
+    $("hypothesis-results").replaceChildren(
+      ...hypotheses.hypotheses.map((h) => {
+        const row = el("tr");
+        for (const text of [
+          h.id + ": " + h.question,
+          h.verdict,
+          h.evidence + " " + h.limit,
+        ])
+          row.append(el("td", text));
+        return row;
+      }),
+    );
   } catch (e) {
     toast(e.message);
   }

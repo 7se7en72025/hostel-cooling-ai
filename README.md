@@ -72,11 +72,26 @@ Replay is explicitly labeled and refuses requests absent from the recorded journ
 
 ## Submission and evidence
 
+The final handoff includes a **14-page report**, **18-slide editable PowerPoint with native charts/tables and speaker notes**, a rendered slide PDF, and an **8-page viva guide with 34 questions and answers**. All four files are in outputs/study/. The application also links to the report, presentation and guide from Compare controllers.
+
+To rebuild the editable presentation and viva guide:
+
+```powershell
+python -m pip install -r requirements-submission.txt
+python tools/build_presentation.py
+python tools/build_viva.py
+```
+
+Export the PPTX to PDF using PowerPoint or LibreOffice after changing slides. Then run python tools/build_submission.py to package the final deliverables, complete source and SHA256 manifest into ../Hostel_Cooling_Final_Submission.zip. The package excludes historical offline outputs and private runtime data.
+
 The current final outputs are in **outputs/study/**. Earlier v1 offline results under outputs/demo are historical artifacts and are not the completed submission.
 
 | Output | Content |
 | --- | --- |
 | Hostel_Cooling_Project_Report.pdf | Complete submission report |
+| Hostel_Cooling_Final_Presentation.pptx | Editable final presentation with native charts/tables and speaker notes |
+| Hostel_Cooling_Final_Presentation.pdf | Rendered final slides |
+| Hostel_Cooling_Viva_Guide.pdf / VIVA_GUIDE.md | Thirty-four viva questions, answers, key results and run commands |
 | report.html | Browser report with figures and evidence links |
 | summary.json / comparison.csv | Aggregate results and study metadata |
 | runs.csv / trajectories.csv | Per-seed outcomes and every closed-loop control interval |
@@ -88,7 +103,9 @@ The current final outputs are in **outputs/study/**. Earlier v1 offline results 
 | sensitivity.csv | All six declared objective-weight conditions |
 | submission_verification.json | Required-baseline, raw-energy and constraint checks |
 | reproducibility_verification.json | Independent frozen-response reproduction checks |
-| presentation_data.json / PRESENTATION_NOTES.md | Sixteen-slide presentation content and viva notes |
+| presentation_data.json / PRESENTATION_NOTES.md | Eighteen-slide presentation content and viva notes |
+| hypothesis_assessment.json | Findings, evidence and limits for all eight original proposal hypotheses |
+| preference_change_phases.csv | Matched per-seed outcomes before and after the preference update |
 
 **models/** contains saved ANN weights, activity counts, training data, validation results and the training curve. **data/** contains the synthetic observation data, its known generator/noise metadata and the fixed language benchmark. The source proposals define the combined course scope; docs/METHODS.md maps each requirement to implementation.
 

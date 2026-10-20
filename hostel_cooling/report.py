@@ -125,6 +125,13 @@ def write_report(summary, output):
     rows = summary["rows"]
     language = summary["language_evaluation"]
     cal = summary["calibration"]
+    from .conclusions import assess_hypotheses
+
+    hypotheses = assess_hypotheses(out)
+    hypothesis_rows = "".join(
+        f'<tr><td>{escape(h["id"] + ": " + h["question"])}</td><td>{escape(h["verdict"])}</td><td>{escape(h["evidence"] + " " + h["limit"])}</td></tr>'
+        for h in hypotheses["hypotheses"]
+    )
     result_rows = "".join(
         f'<tr><td>{escape(r["label"])}</td><td>{r["fan_wh_day"]:.1f}</td><td>{r["mean_abs_tsv_proxy"]:.2f}</td><td>{r["comfort_violation_pct"]:.1f}%</td><td>{r["acceptance_proxy_pct"]:.1f}%</td></tr>'
         for r in rows
@@ -138,6 +145,10 @@ def write_report(summary, output):
         "calibration.json",
         "paired_comparisons.csv",
         "sensitivity.csv",
+        "hypothesis_assessment.json",
+        "preference_change_phases.csv",
+        "PRESENTATION_NOTES.md",
+        "reproducibility_verification.json",
     )
     links = " ".join(f'<a href="/evidence/{name}">{name}</a>' for name in files)
     source_links = "".join(
@@ -158,6 +169,8 @@ def write_report(summary, output):
     <h2>Objective sensitivity</h2><img src="/sensitivity.png" alt="Fan energy versus synthetic comfort under predeclared energy weights"><p>The sweep reports all six predeclared energy weights. It illustrates trade-offs and does not retrospectively select a winning test condition.</p>
     <h2>What the findings establish</h2><p>The results establish functioning software, actual local model behavior and an auditable simulated comparison. Comfort and acceptance derive from a synthetic occupant oracle related to the modeling assumptions. They do not establish measured savings or a human preference-learning benefit. Paired t intervals across three weather seeds are exploratory scenario summaries.</p>
     <p>EPI covers fan kWh per floor area during the simulated period. It excludes other building energy and makes no annual or certification claim. Physical actuators, measured field outcomes and multi-room human deployment are outside the approved simulated scope.</p>
+    <h2>Answers to the original hypotheses</h2><div style="overflow:auto"><table><thead><tr><th>Hypothesis</th><th>Finding</th><th>Evidence and limits</th></tr></thead><tbody>{hypothesis_rows}</tbody></table></div>
+    <p>Before the preference change, proposed and survey trajectories are exactly identical. After the recorded change, acceptance proxy differs by {hypotheses['post_change_acceptance_difference_pp']:+.2f} percentage points. Different phase durations and weather prevent interpreting an unpaired before/after difference as a human treatment effect.</p>
     <h2>Evidence downloads</h2><div class="downloads">{links}</div>
     <h2>Sources</h2><ul>{source_links}<li><a href="https://huggingface.co/Qwen/Qwen3-4B-GGUF">Official Qwen3-4B model</a></li><li><a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md">llama.cpp schema-constrained server</a></li></ul>
     <p>Source code, model artifacts, interval data, tests, setup scripts and the full PDF accompany the study. The supplied course proposals define the combined question and in-course scope.</p></main></html>"""
