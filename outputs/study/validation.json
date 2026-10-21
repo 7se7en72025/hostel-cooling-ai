@@ -65,5 +65,11 @@
     "Hostel_Cooling_Final_Presentation.pptx": {
       "sha256": "64dcfda85531dff5a355997ff5733062a83d0af1b4211993cc740eafc88843a4"
     }
+  },
+  "one_click_launcher": {
+    "existing_app_reuse": "passed",
+    "fresh_application_start": "passed on a separate test port",
+    "main_url": "http://127.0.0.1:8765",
+    "background_server": true
   }
 }

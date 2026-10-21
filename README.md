@@ -8,7 +8,9 @@ The approved study uses simulated room and occupant data. Model inference, train
 
 ## Start the complete application
 
-On this prepared machine, run **start.bat** or:
+On this prepared machine, double-click **open-project.bat**. It starts or reuses the application and opens your browser automatically. The local server runs in the background.
+
+For a terminal session, run **start.bat** or:
 
 ```powershell
 python -m hostel_cooling serve
@@ -71,6 +73,8 @@ python tools/verify_replay.py
 Replay is explicitly labeled and refuses requests absent from the recorded journal. The separately executed replay reproduced trajectories and sensitivity files byte for byte, all nine methods' scientific metrics and every language outcome. Timings and backend labels are excluded from that equality check.
 
 ## Submission and evidence
+
+For an easy Desktop handoff, run `python tools/build_submission.py`, then `powershell -NoProfile -ExecutionPolicy Bypass -File tools/prepare_desktop.ps1`. This creates a **Hostel Cooling - Final Project** folder with numbered PDFs, the editable PPTX, the complete ZIP, a short guide and an **OPEN_PROJECT.bat** launcher. Existing Desktop folders are preserved by creating a dated folder when needed.
 
 The final handoff includes a **14-page report**, **18-slide editable PowerPoint with native charts/tables and speaker notes**, a rendered slide PDF, and an **8-page viva guide with 34 questions and answers**. All four files are in outputs/study/. The application also links to the report, presentation and guide from Compare controllers.
 
