@@ -152,7 +152,7 @@ def verify(output_dir=None):
         "hypotheses_assessed": len(findings["hypotheses"]),
     }
     (out / "submission_verification.json").write_text(
-        json.dumps(result, indent=2), encoding="utf-8"
+        json.dumps(result, indent=2), encoding="utf-8", newline="\n"
     )
     return result
 

@@ -118,9 +118,11 @@ def build_report(output_dir):
     ann = s["ann_validation"]
     routine = s["trained_models"]["routine"]
     lang = s.get("language_evaluation", {})
+    days = s["days_per_seed"]
+    day_label = "day" if days == 1 else "days"
     target = out / "Hostel_Cooling_Project_Report.pdf"
     story = [
-        p("FINAL COURSE PROJECT / 20 OCTOBER 2026", "label"),
+        p("SIMULATED COURSE STUDY", "label"),
         Spacer(1, 24),
         p("Preference-aware cooling<br/>for student hostels", "title"),
         p(
@@ -137,11 +139,11 @@ def build_report(output_dir):
             "This project integrates language-based preference memory with building heat and moisture balances to recommend fan, window and curtain settings. A quantized local Qwen3-4B model extracts activity-specific preferences with quote validation. A fuzzy comfort model and discrete genetic algorithm evaluate legal actions. The study compares fixed, expert, adaptive, neural, room-model and generic-LLM controllers under matched closed-loop conditions, with survey and physics ablations."
         ),
         p(
-            f"The comparison covers {s['days_per_seed']} days per weather seed, seeds {s['seeds']}, and {len(rows)} methods. The proposed controller uses {ours['fan_wh_day']:.1f} Wh/day of fan electricity with {ours['comfort_violation_pct']:.1f}% occupied comfort violations. Fixed settings use {fixed['fan_wh_day']:.1f} Wh/day with {fixed['comfort_violation_pct']:.1f}% violations. Results describe simulated performance, not measured energy savings or human acceptance."
+            f"The comparison covers {days} {day_label} per weather seed, seeds {s['seeds']}, and {len(rows)} methods. The proposed controller uses {ours['fan_wh_day']:.1f} Wh/day of fan electricity with {ours['comfort_violation_pct']:.1f}% occupied comfort violations. Fixed settings use {fixed['fan_wh_day']:.1f} Wh/day with {fixed['comfort_violation_pct']:.1f}% violations. These results describe simulated performance."
         ),
         p("Evidence distinction", "subheading"),
         p(
-            "The language model inference, executable software, stored model parameters, calibration procedure and tests are actual computations. Weather, room observations, occupant targets, sensation labels and benchmark acceptance outcomes are synthetic. No human field study is claimed.",
+            f"Inference mode for this report: {s['inference_mode']}. Weather, room observations, occupant targets, sensation labels and benchmark acceptance outcomes are synthetic.",
             "small",
         ),
         PageBreak(),
@@ -343,7 +345,7 @@ def build_report(output_dir):
             f"Its period fan EPI is {ours['fan_epi_period_kwh_m2']:.4f} kWh/m2 over this {s['days_per_seed']}-day trial. This excludes other electrical loads and makes no annual whole-building EPI claim."
         ),
         p(
-            "Error bars describe SD across weather seeds. Three weather seeds are not three participants. A synthetic sensation oracle related to the controller assumptions cannot independently validate human comfort. Full per-seed tables, paired contrasts and raw trajectories accompany the report.",
+            f"This comparison uses {len(s['seeds'])} weather scenarios. Error bars show variation when multiple scenarios are available. Comfort comes from a simulated occupant model. Full per-seed tables, paired contrasts and raw trajectories accompany the report.",
             "small",
         ),
         PageBreak(),
@@ -368,7 +370,7 @@ def build_report(output_dir):
         ),
         p("Paired uncertainty", "subheading"),
         p(
-            "For each contrast, per-seed differences yield a mean, sample SD and exploratory 95% Student-t interval. With only three weather seeds these intervals are descriptive and underpowered. They are not participant-effect confidence intervals. No human causal effect or statistical superiority follows."
+            "The mean compares methods under matched weather. With multiple weather scenarios, the paired results include variation and exploratory 95% intervals. A trial with students would be needed to estimate effects on residents."
         ),
         PageBreak(),
     ]

@@ -1,4 +1,7 @@
-param([ValidateSet('cpu','vulkan')][string]$Acceleration='vulkan')
+param(
+    [ValidateSet('cpu','vulkan')][string]$Acceleration = 'vulkan',
+    [switch]$DemoOnly
+)
 $ErrorActionPreference='Stop'
 Set-Location -LiteralPath $PSScriptRoot
 if (-not (Test-Path -LiteralPath '.venv\Scripts\python.exe')) {
@@ -8,6 +11,10 @@ if (-not (Test-Path -LiteralPath '.venv\Scripts\python.exe')) {
 $projectPython=Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 & $projectPython -m pip install -r requirements-lock.txt
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
+if ($DemoOnly) {
+    Write-Host 'Demo setup complete. Run open-project.bat -Backend offline.'
+    exit 0
+}
 & $projectPython -m hostel_cooling setup-model --acceleration $Acceleration
 if ($LASTEXITCODE -ne 0) { throw 'Local model setup failed.' }
 & $projectPython -m hostel_cooling train

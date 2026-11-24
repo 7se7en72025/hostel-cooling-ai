@@ -1,5 +1,6 @@
 param(
     [ValidateRange(1024, 65535)][int]$Port = 8765,
+    [ValidateSet('local','offline')][string]$Backend = 'local',
     [switch]$NoBrowser
 )
 
@@ -17,7 +18,9 @@ function Get-ProjectStatus {
 }
 
 function Test-ProjectReady($status) {
-    return ($null -ne $status -and $status.version -and $status.real_llm -eq $true -and $status.backend -like 'Qwen3-*')
+    if ($null -eq $status -or -not $status.version) { return $false }
+    if ($Backend -eq 'offline') { return ($status.inference_mode -eq 'offline rules') }
+    return ($status.real_llm -eq $true -and $status.backend -like 'Qwen3-*')
 }
 
 try {
@@ -35,17 +38,18 @@ try {
         New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
         $stdoutPath = Join-Path $runtimeRoot "launcher-$Port.stdout.log"
         $stderrPath = Join-Path $runtimeRoot "launcher-$Port.stderr.log"
-        $server = Start-Process -FilePath $projectPython -ArgumentList @('-m', 'hostel_cooling', 'serve', '--port', "$Port") -WorkingDirectory $projectRoot -WindowStyle Hidden -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru
+        $server = Start-Process -FilePath $projectPython -ArgumentList @('-m', 'hostel_cooling', 'serve', '--port', "$Port", '--backend', $Backend) -WorkingDirectory $projectRoot -WindowStyle Hidden -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru
         Set-Content -LiteralPath (Join-Path $runtimeRoot "launcher-$Port.pid") -Value $server.Id -Encoding ASCII
         $deadline = [DateTime]::UtcNow.AddSeconds(120)
-        Write-Host 'Starting the application and local model. Please wait...'
+        Write-Host "Starting the application in $Backend mode. Please wait..."
         while ([DateTime]::UtcNow -lt $deadline) {
             $status = Get-ProjectStatus
             if (Test-ProjectReady $status) { break }
             $server.Refresh()
             if ($server.HasExited) {
                 $details = (Get-Content -LiteralPath $stderrPath -Tail 10 -ErrorAction SilentlyContinue) -join [Environment]::NewLine
-                throw "The application could not start. On a new machine, run setup.bat once.$([Environment]::NewLine)$details"
+                $setupCommand = if ($Backend -eq 'offline') { 'setup.bat -DemoOnly' } else { 'setup.bat' }
+                throw "The application could not start. On a new machine, run $setupCommand once.$([Environment]::NewLine)$details"
             }
             Start-Sleep -Milliseconds 500
         }

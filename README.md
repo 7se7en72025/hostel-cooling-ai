@@ -8,7 +8,20 @@ The approved study uses simulated room and occupant data. Model inference, train
 
 ## Start the complete application
 
-On this prepared machine, double-click **open-project.bat**. It starts or reuses the application and opens your browser automatically. The local server runs in the background.
+### Quick demo without the model download
+
+On Windows with Python 3.11+, run these commands from the checkout:
+
+```powershell
+.\setup.bat -DemoOnly
+.\open-project.bat -Backend offline
+```
+
+The demo includes recommendations, 15-minute room simulation, explicit-phrase preference memory, pilot CSV calibration and the submitted comparison. A new full study and the interactive generic LLM controller require a model. On other operating systems, install `requirements.txt` and run `python -m hostel_cooling serve --backend offline`.
+
+### Full local-model mode
+
+After setup, double-click **open-project.bat**. It starts or reuses the application in local-model mode and opens your browser automatically. The local server runs in the background. If the offline demo is still running, use `.\open-project.bat -Port 8767` or stop the demo to reuse the default port.
 
 For a terminal session, run **start.bat** or:
 
@@ -42,13 +55,17 @@ Physical sensors and actuators are outside the chosen simulated scope. The appli
 
 ## Use the application
 
+The dashboard opens on **My room**. The **Project PDF** link opens a two-page overview of how to use it and what the simulated study found. To regenerate the PDF from the submitted results, run `python tools/build_overview.py`.
+
 Choose a pseudonymous profile alias and consent if you want memory or data processing. Different profiles keep separate preferences and observations. Recommendations with generic preferences remain available without consent.
 
 Select study, sleep, away or learned routine mode. Enter current room conditions. Ask for a recommendation, inspect its controls and forecast, and optionally simulate the next 15 minutes. The actual local model interprets natural-language preferences, then the app shows its proposed changes for review. Confirm to save or discard and rephrase. Nothing is saved during preview. Unsupported or invalid extractions leave the profile unchanged.
 
-Pilot & data can validate a CSV, calibrate its room parameters and apply them to the current profile. It also exports and erases that profile's stored records. Actual optional accept/decline votes stay separate from synthetic benchmark outcomes.
+For a quick demo, choose **Try the rain example**. The same room is simulated twice, with and without rain. The example uses default preferences and leaves your current room and profile settings alone. The one-hour forecast compares the suggested settings with the fixed schedule under the same room conditions. The two cards show final air temperature and fan electricity for that hour. Open **See the readings** for the 15-minute results.
 
-Compare controllers displays the completed study and links to its submission PDF and raw evidence. The Run complete study button starts the full actual-model pipeline asynchronously; it is not an offline-rule substitute.
+Pilot & data can validate a CSV, calibrate its room parameters and apply them to the current profile. It also exports and erases that profile's stored records. Optional accept/decline votes stay separate from synthetic benchmark outcomes.
+
+Study results displays the submitted study and links to its PDF and raw evidence. With the pinned local model running, **Run 7-day comparison** starts a new study and links to its report when the run finishes. Each dashboard run has its own folder under `build/study-runs/`. The most recent finished report is available after a restart.
 
 ## Reproduce the full project
 
@@ -59,7 +76,7 @@ python -m unittest discover -s tests -v
 python tools/verify_submission.py
 ```
 
-**run-study.bat** also runs the complete study. Model inference is the main runtime cost. Matching requests can reuse explicitly labeled cached actual model responses. Controller latency is recorded separately from preference extraction. The response journal distinguishes generated results from cache hits.
+**run-study.bat** also runs the complete study. Each CLI run defaults to a new folder under `build/` and prints the path at startup. You can supply an empty directory with `--output`. The new run includes its own trained models, pilot data, reports and evidence. Model inference is the main runtime cost. Matching requests can reuse explicitly labeled cached actual model responses. Controller latency is recorded separately from preference extraction. The response journal distinguishes generated results from cache hits.
 
 The pipeline trains/saves models, generates a separate 14-day noisy pilot, calibrates the controller on chronological training data, compares nine methods over seven days and three weather seeds at a common hourly control cadence, evaluates 24 held-out language phrases, runs six predeclared energy weights, and produces the report.
 
@@ -70,11 +87,11 @@ python -m hostel_cooling study --backend replay --output build/replay-study
 python tools/verify_replay.py
 ```
 
-Replay is explicitly labeled and refuses requests absent from the recorded journal. The separately executed replay reproduced trajectories and sensitivity files byte for byte, all nine methods' scientific metrics and every language outcome. Timings and backend labels are excluded from that equality check.
+Replay is explicitly labeled and refuses requests absent from the recorded journal. The verification writes its result in the replay folder. The separately executed replay reproduced trajectories and sensitivity files byte for byte, all nine methods' scientific metrics and every language outcome. Timings and backend labels are excluded from that equality check.
 
 ## Submission and evidence
 
-For an easy Desktop handoff, run `python tools/build_submission.py`, then `powershell -NoProfile -ExecutionPolicy Bypass -File tools/prepare_desktop.ps1`. This creates a **Hostel Cooling - Final Project** folder with numbered PDFs, the editable PPTX, the complete ZIP, a short guide and an **OPEN_PROJECT.bat** launcher. Existing Desktop folders are preserved by creating a dated folder when needed.
+For the Desktop handoff, run `python tools/build_submission.py`, then `powershell -NoProfile -ExecutionPolicy Bypass -File tools/prepare_desktop.ps1`. The **Hostel Cooling AI - Professor Handoff** folder groups the report, overview, slides PDF and ZIP under **01 Submit to Professor**. **02 Take to Viva** holds the editable deck, viva guide and dashboard launcher. If the destination is already in use, the script creates a dated copy.
 
 The final handoff includes a **14-page report**, **18-slide editable PowerPoint with native charts/tables and speaker notes**, a rendered slide PDF, and an **8-page viva guide with 34 questions and answers**. All four files are in outputs/study/. The application also links to the report, presentation and guide from Compare controllers.
 
@@ -132,12 +149,12 @@ The fitted RC model and ANN remain simplified synthetic models. Low prediction e
 
 ## Optional modes and development
 
-Use --backend offline only when explicitly testing the rule parser. The default local backend does not silently replace missing inference with offline rules. The Ollama adapter remains available through --backend ollama with OLLAMA_MODEL set to a real installed model.
+Use `--backend offline` for the demo and rule-parser tests. The default backend requires local inference. The dashboard and `experiment` also support `--backend ollama` with `OLLAMA_MODEL` set to a real installed model.
 
 ```powershell
 python -m pip install -r requirements-dev.txt
-python -m playwright install chromium
+python -m playwright install --only-shell chromium
 python tests/browser_smoke.py
 ```
 
-Browser validation uses and erases a dedicated test alias rather than a participant's records. Unit tests use temporary files. GitHub CI runs the non-GPU software/model checks on Windows and Linux. Setup scripts and requirements-lock.txt preserve the tested software versions. Large model resources are pinned separately by revision, release and SHA256.
+Run the browser check against a running dashboard. It creates and erases unique test aliases and writes screenshots to `build/browser-smoke/`. Set `COOLING_TEST_REQUIRE_LLM=1` to require live inference. GitHub CI runs the software and model checks on Windows and Linux and exercises the offline browser workflow on Linux. Large model resources are pinned by revision, release and SHA256.

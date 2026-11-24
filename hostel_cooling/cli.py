@@ -41,23 +41,23 @@ def main():
     )
     study.add_argument("--days", type=int, default=7)
     study.add_argument("--seeds", nargs="+", type=int, default=[11, 23, 47])
-    study.add_argument("--output", default=str(ROOT / "outputs/study"))
     study.add_argument(
-        "--backend", choices=["local", "ollama", "offline", "replay"], default="local"
+        "--output", help="Empty output directory (default: a new folder under build/)"
     )
+    study.add_argument("--backend", choices=["local", "replay"], default="local")
     language = sub.add_parser("evaluate-language")
-    language.add_argument("--output", default=str(ROOT / "outputs/study"))
+    language.add_argument("--output", default=str(ROOT / "build/language"))
     language.add_argument(
         "--backend", choices=["local", "ollama", "offline", "replay"], default="local"
     )
     gen = sub.add_parser("sample-data")
-    gen.add_argument("--output", default=str(ROOT / "data/synthetic_pilot.csv"))
+    gen.add_argument("--output", default=str(ROOT / "build/synthetic_pilot.csv"))
     gen.add_argument("--days", type=int, default=7)
     validate = sub.add_parser("validate")
     validate.add_argument("csv")
     cal = sub.add_parser("calibrate")
     cal.add_argument("csv")
-    cal.add_argument("--output", default=str(ROOT / "outputs/calibration.json"))
+    cal.add_argument("--output", default=str(ROOT / "build/calibration.json"))
     args = parser.parse_args()
     try:
         if args.command == "serve":
@@ -131,8 +131,10 @@ def main():
         elif args.command == "evaluate-language":
             from .language_evaluation import evaluate_language
             from .llm import get_backend
+            from .study import study_output
 
-            result = evaluate_language(get_backend(args.backend), args.output)
+            output = study_output(args.output)
+            result = evaluate_language(get_backend(args.backend), output)
             print(
                 json.dumps({k: v for k, v in result.items() if k != "cases"}, indent=2)
             )

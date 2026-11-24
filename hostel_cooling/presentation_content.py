@@ -27,7 +27,7 @@ def write_presentation_content(output_dir):
                 "Preference memory, building physics and constrained room control",
                 "Completed simulated research project",
             ],
-            "notes": "All room and occupant outcomes are simulated. The local transformer, training and exported computations actually ran. Course instructor: Prof. Rajiv Gupta.",
+            "notes": f"All room and occupant outcomes are simulated. Inference mode: {s['inference_mode']}. Course instructor: Prof. Rajiv Gupta.",
         },
         {
             "title": "Research question",

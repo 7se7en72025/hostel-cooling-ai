@@ -156,7 +156,7 @@ def analyze_study(output_dir):
     axes[2].axhline(1, color="gray", ls="--", lw=0.5)
     axes[2].axhline(-1, color="gray", ls="--", lw=0.5)
     fig.suptitle(
-        f"Closed-loop trajectories | seed {seed} | synthetic plant, actual local LLM",
+        f"Closed-loop trajectories | seed {seed} | simulated room, {summary['inference_mode']}",
         fontsize=12,
     )
     fig.savefig(out / "trajectories.png", dpi=170)

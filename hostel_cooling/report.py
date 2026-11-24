@@ -136,6 +136,15 @@ def write_report(summary, output):
         f'<tr><td>{escape(r["label"])}</td><td>{r["fan_wh_day"]:.1f}</td><td>{r["mean_abs_tsv_proxy"]:.2f}</td><td>{r["comfort_violation_pct"]:.1f}%</td><td>{r["acceptance_proxy_pct"]:.1f}%</td></tr>'
         for r in rows
     )
+    weather_note = (
+        "Paired comparisons across weather scenarios give exploratory intervals."
+        if len(summary["seeds"]) > 1
+        else "The single weather scenario gives a matched comparison. More scenarios would let us estimate how results vary."
+    )
+    days = summary["days_per_seed"]
+    day_label = "day" if days == 1 else "days"
+    weather_count = len(summary["seeds"])
+    weather_label = "scenario" if weather_count == 1 else "scenarios"
     files = (
         "summary.json",
         "runs.csv",
@@ -150,24 +159,26 @@ def write_report(summary, output):
         "PRESENTATION_NOTES.md",
         "reproducibility_verification.json",
     )
-    links = " ".join(f'<a href="/evidence/{name}">{name}</a>' for name in files)
+    links = " ".join(
+        f'<a href="{name}">{name}</a>' for name in files if (out / name).is_file()
+    )
     source_links = "".join(
         f'<li><a href="{url}">{escape(title)}</a></li>' for title, url in SOURCES
     )
     content = f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Completed hostel cooling study</title>
     <style>body{{font:16px/1.65 system-ui;color:#213d31;background:#f4f6ef;margin:0}}main{{max-width:1080px;margin:auto;padding:48px 28px}}h1{{font:46px/1.1 Georgia;max-width:900px}}h2{{margin-top:38px}}a{{color:#27684f}}.evidence{{background:#e4eddf;padding:20px;border-left:4px solid #27684f}}table{{width:100%;border-collapse:collapse;font-size:13px;background:white}}td,th{{padding:12px;text-align:left;border-bottom:1px solid #dce4d6}}img{{width:100%;height:auto}}.downloads a{{display:inline-block;margin:8px 15px 8px 0}}@media print{{body{{background:white}}main{{padding:0}}tr,img{{break-inside:avoid}}}}</style><main>
-    <p>CE F417 + CE F423 / FINAL SIMULATED RESEARCH PROJECT</p><h1>Preference-aware cooling for student hostels</h1><p><a href="/report.pdf">Download the full submission PDF</a></p>
-    <div class="evidence"><b>Completed computational scope</b><p>Actual Qwen3-4B transformer inference, persistent activity preferences, trained neural and routine models, noisy-data calibration, complete course baseline sets and reproducible evidence. Room and occupant outcomes remain explicitly simulated.</p></div>
-    <h2>Research design</h2><p>The study runs {summary["days_per_seed"]} days for each of {len(summary["seeds"])} weather seeds. Room physics advances every 15 minutes. All {len(rows)} controllers choose actions on the same {summary["control_interval_minutes"]}-minute cadence. Each policy evolves its own closed-loop room state under common weather and constraints.</p>
-    <h2>Actual local language inference</h2><p>Model: {escape(summary["preference_backend"])}. Structured extractions require original-message evidence quotes and validated values. Study prompts, responses, usage and timings are preserved. Matching requests can reuse labeled cached records. Recorded-response replay cannot generate a new answer.</p>
+    <p>CE F417 + CE F423 / SIMULATED RESEARCH PROJECT</p><h1>Preference-aware cooling for student hostels</h1><p><a href="Hostel_Cooling_Project_Report.pdf">Download the study PDF</a></p>
+    <div class="evidence"><b>Inference mode: {escape(summary['inference_mode'])}</b><p>The run covers activity preferences, trained neural and routine models, noisy-data calibration and course baseline comparisons. Room and occupant outcomes are simulated.</p></div>
+    <h2>Research design</h2><p>The study covers {days} simulated {day_label} per weather scenario, with {weather_count} {weather_label} in total. Room physics advances every 15 minutes. All {len(rows)} controllers choose actions every {summary["control_interval_minutes"]} minutes under the same weather and constraints.</p>
+    <h2>Language inference</h2><p>Model: {escape(summary["preference_backend"])}. The main comparison used {summary["llm_calls"]} model responses, including {summary["llm_cache_hits"]} retrieved from saved responses. Structured extractions require original-message evidence quotes and validated values.</p>
     <p>Held-out language benchmark: {language["n"]} phrases, {language["exact_match_accuracy"]*100:.1f}% exact-match accuracy and field F1 {language["field_f1"]:.3f}. All successes, misses and rejected invalid preferences remain available.</p>
     <p>The benchmark measures raw extraction without human correction. The application shows proposed preference changes for explicit confirmation or discard before saving. Preview leaves memory unchanged, and confirmation rechecks consent and the profile revision.</p>
-    <h2>Calibrated room model</h2><p>Fourteen days of noisy synthetic observations fit the controller model. Training and test transitions are chronological and separate. Held-out RMSE: {cal["test_rmse_c"]:.3f} C, versus {cal["persistence_test_rmse_c"]:.3f} C for persistence. The fitted conductance differs from the known plant value, illustrating parameter identifiability and noise limitations.</p><img src="/evidence/calibration.png" alt="Chronological calibration holdout error">
-    <h2>Baseline comparisons</h2><img src="/comparison.png" alt="Fan electricity and occupied comfort violations"><div style="overflow:auto"><table><thead><tr><th>Controller</th><th>Fan Wh/day</th><th>Mean |TSV| proxy</th><th>Violations</th><th>Acceptance proxy</th></tr></thead><tbody>{result_rows}</tbody></table></div>
+    <h2>Calibrated room model</h2><p>Fourteen days of noisy synthetic observations fit the controller model. Training and test transitions are chronological and separate. Held-out RMSE: {cal["test_rmse_c"]:.3f} C, versus {cal["persistence_test_rmse_c"]:.3f} C for persistence. The fitted conductance differs from the known plant value, illustrating parameter identifiability and noise limitations.</p><img src="calibration.png" alt="Chronological calibration holdout error">
+    <h2>Baseline comparisons</h2><img src="comparison.png" alt="Fan electricity and occupied comfort violations"><div style="overflow:auto"><table><thead><tr><th>Controller</th><th>Fan Wh/day</th><th>Mean |TSV| proxy</th><th>Violations</th><th>Acceptance proxy</th></tr></thead><tbody>{result_rows}</tbody></table></div>
     <p>F417 compares expert rules, adaptive comfort, ANN, generic LLM and the proposed method. F423 compares fixed passive settings, adaptive comfort, room physics, generic LLM and the proposed method. Survey and no-physics variants isolate retained context and forecast effects.</p>
-    <h2>Closed-loop behavior</h2><img src="/trajectories.png" alt="Matched fixed, generic LLM and proposed-controller room trajectories">
-    <h2>Objective sensitivity</h2><img src="/sensitivity.png" alt="Fan energy versus synthetic comfort under predeclared energy weights"><p>The sweep reports all six predeclared energy weights. It illustrates trade-offs and does not retrospectively select a winning test condition.</p>
-    <h2>What the findings establish</h2><p>The results establish functioning software, actual local model behavior and an auditable simulated comparison. Comfort and acceptance derive from a synthetic occupant oracle related to the modeling assumptions. They do not establish measured savings or a human preference-learning benefit. Paired t intervals across three weather seeds are exploratory scenario summaries.</p>
+    <h2>Closed-loop behavior</h2><img src="trajectories.png" alt="Matched fixed, generic LLM and proposed-controller room trajectories">
+    <h2>Objective sensitivity</h2><img src="sensitivity.png" alt="Fan energy versus synthetic comfort under predeclared energy weights"><p>The sweep reports all six predeclared energy weights. It illustrates trade-offs and does not retrospectively select a winning test condition.</p>
+    <h2>What the findings establish</h2><p>The study shows how the software behaved under the conditions tested. Comfort and acceptance were estimated by a simulated occupant model. A human study would be needed to measure savings and comfort in occupied rooms. {weather_note}</p>
     <p>EPI covers fan kWh per floor area during the simulated period. It excludes other building energy and makes no annual or certification claim. Physical actuators, measured field outcomes and multi-room human deployment are outside the approved simulated scope.</p>
     <h2>Answers to the original hypotheses</h2><div style="overflow:auto"><table><thead><tr><th>Hypothesis</th><th>Finding</th><th>Evidence and limits</th></tr></thead><tbody>{hypothesis_rows}</tbody></table></div>
     <p>Before the preference change, proposed and survey trajectories are exactly identical. After the recorded change, acceptance proxy differs by {hypotheses['post_change_acceptance_difference_pp']:+.2f} percentage points. Different phase durations and weather prevent interpreting an unpaired before/after difference as a human treatment effect.</p>

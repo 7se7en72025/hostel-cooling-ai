@@ -8,6 +8,7 @@ import numpy as np
 import platform
 import importlib.metadata
 import subprocess
+import tempfile
 from .ann import ComfortANN
 from .domain import Room
 from .experiment import run_experiment
@@ -52,21 +53,26 @@ def progress(item):
     print(json.dumps(item), flush=True)
 
 
-def run_study(
-    output_dir="outputs/study", days=7, seeds=(11, 23, 47), backend_kind="local"
-):
-    out = Path(output_dir)
-    out.mkdir(parents=True, exist_ok=True)
-    progress({"stage": "training"})
-    trained = train_models()
-    metadata = generate_noisy_pilot(ROOT / "data" / "noisy_pilot.csv")
-    (ROOT / "data" / "noisy_pilot_metadata.json").write_text(
-        json.dumps(metadata, indent=2), encoding="utf-8"
-    )
-    progress({"stage": "calibration"})
-    calibration = calibrate(ROOT / "data" / "noisy_pilot.csv", out / "calibration.json")
-    estimated_room = Room(**calibration["selected_room"])
-    plant_room = Room(**metadata["plant_room"])
+def study_output(output_dir):
+    out = Path(output_dir).resolve()
+    for folder in ("outputs/study", "models", "data"):
+        if out.is_relative_to((ROOT / folder).resolve()):
+            raise ValueError("Choose a separate output directory, such as build/study.")
+    return out
+
+
+def run_study(output_dir=None, days=7, seeds=(11, 23, 47), backend_kind="local"):
+    if backend_kind not in ("local", "replay"):
+        raise ValueError(
+            "The complete study requires the pinned local model or replay. Use experiment for other backends."
+        )
+    if output_dir is None:
+        build = ROOT / "build"
+        build.mkdir(parents=True, exist_ok=True)
+        output_dir = tempfile.mkdtemp(prefix="study-", dir=build)
+    out = study_output(output_dir)
+    if out.exists() and (not out.is_dir() or any(out.iterdir())):
+        raise ValueError(f"Study output must be an empty directory: {out}")
     kwargs = {}
     if backend_kind == "local":
         kwargs = {
@@ -74,6 +80,18 @@ def run_study(
             "cache_path": ROOT / "runtime" / "study_model_cache.jsonl",
         }
     backend = get_backend(backend_kind, **kwargs)
+    progress({"stage": "training", "output": str(out)})
+    models = out / "models"
+    trained = train_models(models)
+    pilot_csv = out / "data" / "noisy_pilot.csv"
+    metadata = generate_noisy_pilot(pilot_csv)
+    pilot_csv.with_name("noisy_pilot_metadata.json").write_text(
+        json.dumps(metadata, indent=2), encoding="utf-8"
+    )
+    progress({"stage": "calibration"})
+    calibration = calibrate(pilot_csv, out / "calibration.json")
+    estimated_room = Room(**calibration["selected_room"])
+    plant_room = Room(**metadata["plant_room"])
     progress({"stage": "comparison", "model": backend.name})
     summary = run_experiment(
         out,
@@ -84,7 +102,7 @@ def run_study(
         room=estimated_room,
         plant_room=plant_room,
         progress=progress,
-        ann=ComfortANN.load(ROOT / "models" / "comfort_ann.npz"),
+        ann=ComfortANN.load(models / "comfort_ann.npz"),
     )
     summary["calibration"] = calibration
     summary["trained_models"] = trained
@@ -105,7 +123,8 @@ def finalize_study(output_dir, backend=None):
     from .analysis import analyze_study, sensitivity
     from .report import write_report
 
-    out = Path(output_dir)
+    out = study_output(output_dir)
+    models = out / "models"
     summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
     environment = {
         "python": platform.python_version(),
@@ -145,7 +164,7 @@ def finalize_study(output_dir, backend=None):
         backend,
         Room(**summary["room"]),
         Room(**summary["plant_room"]),
-        ComfortANN.load(ROOT / "models" / "comfort_ann.npz"),
+        ComfortANN.load(models / "comfort_ann.npz"),
     )
     summary["sensitivity"] = sweep
     summary["course_comparisons"] = {
@@ -177,13 +196,13 @@ def finalize_study(output_dir, backend=None):
     assess_hypotheses(out)
     from .analysis import model_figures
 
-    model_figures(ROOT / "models", out)
-    write_report(summary, out)
+    model_figures(models, out)
     from .pdf_report import build_report
 
     build_report(out)
     from .presentation_content import write_presentation_content
 
     write_presentation_content(out)
+    write_report(summary, out)
     progress({"stage": "complete", "complete": summary["complete"]})
     return summary

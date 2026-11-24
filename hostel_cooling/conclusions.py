@@ -153,8 +153,8 @@ def assess_hypotheses(output_dir):
                 if energy_delta >= 0 or violation_delta > 0
                 else "Consistent with this scenario"
             ),
-            "evidence": f"Fan energy decreases, but discomfort violations increase by {violation_delta:.2f} percentage points versus fixed.",
-            "limit": "The lower electricity outcome includes a comfort trade-off.",
+            "evidence": f"Versus fixed: fan electricity {energy_delta:+.2f}%; occupied discomfort {violation_delta:+.2f} percentage points.",
+            "limit": "Both outcomes come from a simulated room and occupant.",
         },
         {
             "id": "F423 H2",
@@ -172,7 +172,7 @@ def assess_hypotheses(output_dir):
                 else "Not supported by this discomfort comparison"
             ),
             "evidence": f"Ours minus no-physics: occupied violations {physics_delta:+.2f} percentage points; fan electricity {ours['fan_wh_day']-no_physics['fan_wh_day']:+.1f} Wh/day.",
-            "limit": "Lookahead improves modeled comfort at higher energy. This is a joint policy comparison, not a proof of physical accuracy.",
+            "limit": "The comparison changes the whole control policy. Measurements in an occupied room could test physical accuracy.",
         },
         {
             "id": "F423 H4",
@@ -182,7 +182,7 @@ def assess_hypotheses(output_dir):
                 if epi_delta < 0
                 else "Not supported for the trial-period fan EPI"
             ),
-            "evidence": f"Ours {ours['fan_epi_period_kwh_m2']:.4f} versus fixed {fixed['fan_epi_period_kwh_m2']:.4f} kWh/m2 over the seven-day period ({epi_delta:+.2f}%).",
+            "evidence": f"Ours {ours['fan_epi_period_kwh_m2']:.4f} versus fixed {fixed['fan_epi_period_kwh_m2']:.4f} kWh/m2 over the simulated period ({epi_delta:+.2f}%).",
             "limit": "Fan-only period EPI excludes lighting, appliances and other building electricity. It is not annual whole-building EPI.",
         },
     ]

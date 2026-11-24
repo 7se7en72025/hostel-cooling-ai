@@ -17,3 +17,12 @@ jobs:
       - run: python -m hostel_cooling sample-data --days 1 --output synthetic-check.csv
       - run: python -m hostel_cooling validate synthetic-check.csv
       - run: python tools/verify_submission.py
+      - if: runner.os == 'Linux'
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python -m playwright install --with-deps --only-shell chromium
+          python -m hostel_cooling serve --backend offline &
+          server=$!
+          trap 'kill "$server"' EXIT
+          curl --fail --silent --retry 10 --retry-connrefused http://127.0.0.1:8765/api/status > /dev/null
+          python tests/browser_smoke.py

@@ -1,7 +1,9 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 import numpy as np
 from hostel_cooling.ann import ComfortANN
 from hostel_cooling.domain import Action, Conditions, Preference, Room
@@ -12,6 +14,131 @@ from hostel_cooling.routines import RoutineModel, train_synthetic_routines
 
 
 class CompleteProjectTests(unittest.TestCase):
+    def test_inflight_preference_review_expires_after_consent_erasure(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from http.server import ThreadingHTTPServer
+        from queue import Queue
+        from threading import Event, Thread
+        from urllib.error import HTTPError
+        from urllib.request import Request, urlopen
+
+        from hostel_cooling.llm import Offline
+        from hostel_cooling.server import serve
+
+        ready = Queue()
+        extracting, release = Event(), Event()
+
+        class TestServer(ThreadingHTTPServer):
+            def server_activate(self):
+                super().server_activate()
+                ready.put(self)
+
+        class SlowParser(Offline):
+            def extract(self, text, activity, preference):
+                extracting.set()
+                if not release.wait(8):
+                    raise RuntimeError("Test did not release the preference preview")
+                return super().extract(text, activity, preference)
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            with (
+                patch("hostel_cooling.server.ROOT", root),
+                patch("hostel_cooling.server.STUDY", root / "study"),
+                patch("hostel_cooling.server.STUDY_RUNS", root / "runs"),
+                patch("hostel_cooling.server.ThreadingHTTPServer", TestServer),
+            ):
+                worker = Thread(target=serve, args=(0, SlowParser()), daemon=True)
+                worker.start()
+                server = ready.get(timeout=8)
+
+                def request(path, data=None):
+                    body = json.dumps(data).encode() if data is not None else None
+                    req = Request(
+                        f"http://127.0.0.1:{server.server_port}{path}",
+                        data=body,
+                        headers={"Content-Type": "application/json"},
+                    )
+                    with urlopen(req, timeout=10) as response:
+                        return json.load(response)
+
+                try:
+                    request("/api/consent", {"consent": True})
+                    path = "/api/preferences/preview"
+                    message = {"message": "I prefer 27 C", "activity": "study"}
+                    with ThreadPoolExecutor(max_workers=1) as client:
+                        pending = client.submit(request, path, message)
+                        try:
+                            self.assertTrue(extracting.wait(5))
+                            request("/api/consent", {"consent": False})
+                            request("/api/consent", {"consent": True})
+                        finally:
+                            release.set()
+                        with self.assertRaises(HTTPError) as stale:
+                            pending.result(timeout=8)
+                        self.assertEqual(stale.exception.code, 409)
+                        stale.exception.close()
+                    self.assertEqual(request("/api/profile/export")["events"], [])
+                    fresh = request(path, message)
+                    confirmed = request(
+                        "/api/preferences/confirm",
+                        {"proposal_id": fresh["proposal_id"], "accept": True},
+                    )
+                    self.assertEqual(
+                        confirmed["preference"]["activity_targets"]["study"], 27
+                    )
+                finally:
+                    server.shutdown()
+                    worker.join(timeout=8)
+
+    def test_dashboard_recovers_latest_finished_study(self):
+        from hostel_cooling.server import FINAL_RUN_FILES, latest_study_job
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for index, state in enumerate(
+                ("complete", "complete", "partial", "invalid"), start=1
+            ):
+                run_dir = root / f"{index:016x}"
+                run_dir.mkdir()
+                for name in FINAL_RUN_FILES if state != "partial" else ("report.html",):
+                    (run_dir / name).touch()
+                os.utime(run_dir / "report.html", (index, index))
+                summary = {"days_per_seed": 7, "complete": True, "rows": [1, 2, 3]}
+                (run_dir / "summary.json").write_text(
+                    json.dumps(summary) if state != "invalid" else "{", encoding="utf-8"
+                )
+            with patch("hostel_cooling.server.STUDY_RUNS", root):
+                result = latest_study_job()
+            self.assertEqual(result["state"], "complete")
+            self.assertEqual(result["methods"], 3)
+            self.assertEqual(
+                result["report_url"], "/study-runs/0000000000000002/report.html"
+            )
+
+    def test_study_rejects_submitted_or_existing_outputs_before_inference(self):
+        from hostel_cooling.study import run_study
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            submitted = root / "outputs/study"
+            submitted.mkdir(parents=True)
+            previous = root / "build/previous"
+            previous.mkdir(parents=True)
+            evidence = previous / "summary.json"
+            evidence.write_text("previous result", encoding="utf-8")
+            with (
+                patch("hostel_cooling.study.ROOT", root),
+                patch("hostel_cooling.study.get_backend") as get_backend,
+            ):
+                with self.assertRaisesRegex(ValueError, "separate output directory"):
+                    run_study(submitted / "replay", backend_kind="replay")
+                with self.assertRaisesRegex(ValueError, "empty directory"):
+                    run_study(previous)
+                get_backend.assert_not_called()
+            self.assertFalse((submitted / "replay").exists())
+            self.assertEqual(evidence.read_text(encoding="utf-8"), "previous result")
+
     def test_proposal_findings_match_frozen_trial_and_preserve_negative_result(self):
         import shutil
         from hostel_cooling.conclusions import assess_hypotheses

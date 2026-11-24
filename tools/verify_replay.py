@@ -49,8 +49,8 @@ def main():
         "language_outcomes": "identical for all 24 phrases and memory checks",
         "excluded": "machine-dependent timings and explicit backend labels",
     }
-    (args.reference / "reproducibility_verification.json").write_text(
-        json.dumps(result, indent=2), encoding="utf-8"
+    (args.replay / "reproducibility_verification.json").write_text(
+        json.dumps(result, indent=2), encoding="utf-8", newline="\n"
     )
     print(json.dumps(result, indent=2))
 

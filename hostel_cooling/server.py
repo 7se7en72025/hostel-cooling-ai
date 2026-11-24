@@ -10,8 +10,7 @@ from urllib.parse import urlsplit
 from datetime import datetime
 from .domain import Action, Conditions, Preference, Room, number
 from .preferences import Memory
-from .llm import Offline, get_backend
-from .optimizer import optimize
+from .llm import LocalLLM, get_backend
 from .physics import step
 from .comfort import adaptive, fuzzy_vote
 from .ann import ComfortANN
@@ -21,17 +20,97 @@ from .paths import ROOT
 
 WEB = Path(__file__).parent / "web"
 STUDY = ROOT / "outputs" / "study"
+STUDY_RUNS = ROOT / "build" / "study-runs"
+EVIDENCE = {
+    "summary.json",
+    "comparison.csv",
+    "runs.csv",
+    "trajectories.csv",
+    "llm_inference.jsonl",
+    "conversation_evidence.json",
+    "language_evaluation.json",
+    "calibration.json",
+    "paired_comparisons.csv",
+    "sensitivity.csv",
+    "validation.json",
+    "hypothesis_assessment.json",
+    "preference_change_phases.csv",
+    "PRESENTATION_NOTES.md",
+    "presentation_data.json",
+    "reproducibility_verification.json",
+    "submission_verification.json",
+}
+RUN_FILES = {
+    "report.html": "text/html; charset=utf-8",
+    "Hostel_Cooling_Project_Report.pdf": "application/pdf",
+    **{
+        name + ".png": "image/png"
+        for name in ("calibration", "comparison", "trajectories", "sensitivity")
+    },
+}
+FINAL_RUN_FILES = (
+    "report.html",
+    "Hostel_Cooling_Project_Report.pdf",
+    "presentation_data.json",
+)
+
+
+def forecast(room, conditions, action):
+    predicted, heat = step(room, conditions, action)
+    future = predicted
+    trajectory = []
+    for minutes in (15, 30, 45, 60):
+        if minutes > 15:
+            future, _ = step(room, future, action)
+        trajectory.append(
+            {"minutes": minutes, "temperature_c": future.indoor_c, "rh": future.rh}
+        )
+    return predicted, heat, trajectory
+
+
+def study_job(directory, summary):
+    return {
+        "state": "complete",
+        "days": summary["days_per_seed"],
+        "methods": len(summary["rows"]),
+        "all_checks_passed": summary["complete"],
+        "report_url": f"/study-runs/{directory.name}/report.html",
+    }
+
+
+def latest_study_job():
+    latest = {"state": "idle"}
+    latest_changed = -1
+    for summary_path in STUDY_RUNS.glob("*/summary.json"):
+        directory = summary_path.parent
+        if not re.fullmatch(r"[a-f0-9]{16}", directory.name):
+            continue
+        try:
+            report_changed = (directory / "report.html").stat().st_mtime_ns
+            if report_changed <= latest_changed or not all(
+                (directory / name).is_file() for name in FINAL_RUN_FILES
+            ):
+                continue
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            latest = study_job(directory, summary)
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        latest_changed = report_changed
+    return latest
 
 
 def serve(port=8765, backend=None):
     backend = backend or get_backend()
+    replay = getattr(backend, "replay_only", False)
+    live_model = backend.is_llm and not replay
+    study_available = isinstance(backend, LocalLLM) and live_model
     memory = Memory(ROOT / "runtime" / "pilot.sqlite3")
     ann = (
         ComfortANN.load(ROOT / "models" / "comfort_ann.npz")
         if (ROOT / "models" / "comfort_ann.npz").exists()
         else ComfortANN()
     )
-    job = {"state": "idle"}
+    job = latest_study_job()
     job_lock = threading.Lock()
     proposals = {}
     proposal_lock = threading.Lock()
@@ -66,22 +145,33 @@ def serve(port=8765, backend=None):
             self.end_headers()
             self.wfile.write(data)
 
+        def send_file(self, directory, name, kinds):
+            kind = kinds.get(name)
+            if name in EVIDENCE:
+                kind = (
+                    "application/json; charset=utf-8"
+                    if name.endswith(".json")
+                    else "text/plain; charset=utf-8"
+                )
+            target = directory / name
+            if kind and target.is_file():
+                return self.send(target.read_bytes(), kind=kind)
+            return self.send({"error": "Not found"}, 404)
+
         def guard(self):
             self.participant = self.headers.get("X-Participant-ID", "local-pilot")
             if not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", self.participant):
                 raise ValueError(
                     "Participant alias must contain 1..40 letters, digits, underscores or hyphens"
                 )
-            if self.headers.get("Host") not in (
-                f"127.0.0.1:{port}",
-                f"localhost:{port}",
-            ):
+            hosts = (
+                f"127.0.0.1:{self.server.server_port}",
+                f"localhost:{self.server.server_port}",
+            )
+            if self.headers.get("Host") not in hosts:
                 raise PermissionError("Localhost access only")
             origin = self.headers.get("Origin")
-            if origin and origin not in (
-                f"http://127.0.0.1:{port}",
-                f"http://localhost:{port}",
-            ):
+            if origin and origin not in tuple(f"http://{host}" for host in hosts):
                 raise PermissionError("Cross-origin requests are disabled")
 
         def do_GET(self):
@@ -93,11 +183,11 @@ def serve(port=8765, backend=None):
                         {
                             "version": "2.0.0",
                             "backend": backend.name,
-                            "real_llm": backend.is_llm
-                            and not getattr(backend, "replay_only", False),
+                            "real_llm": live_model,
+                            "study_available": study_available,
                             "inference_mode": (
                                 "recorded-response replay"
-                                if getattr(backend, "replay_only", False)
+                                if replay
                                 else (
                                     "actual model"
                                     if backend.is_llm
@@ -109,7 +199,7 @@ def serve(port=8765, backend=None):
                             "participant": self.participant,
                             "room_model": selected_room(self.participant),
                             "model_provenance": getattr(backend, "provenance", None),
-                            "data_status": "Simulated research study with actual model inference",
+                            "data_status": "Submitted simulated research study",
                         }
                     )
                 if path == "/api/profile/export":
@@ -126,6 +216,23 @@ def serve(port=8765, backend=None):
                             ROOT / "models" / "routine_model.json",
                         )
                     )
+                if path == "/api/rain-example":
+                    defaults = Conditions()
+                    room, preference, current = Room(), Preference(), Action()
+                    cases = []
+                    for rain in (False, True):
+                        conditions = Conditions(rain=rain)
+                        action, _ = choose(
+                            "ours", room, conditions, preference, current
+                        )
+                        cases.append({"rain": rain, "action": action.dict()})
+                    return self.send(
+                        {
+                            "indoor_c": defaults.indoor_c,
+                            "outdoor_c": defaults.outdoor_c,
+                            "cases": cases,
+                        }
+                    )
                 if path == "/api/experiment/status":
                     with job_lock:
                         return self.send(dict(job))
@@ -138,36 +245,21 @@ def serve(port=8765, backend=None):
                     )
                 if path.startswith("/evidence/"):
                     name = path.removeprefix("/evidence/")
-                    allowed = {
-                        "summary.json",
-                        "comparison.csv",
-                        "runs.csv",
-                        "trajectories.csv",
-                        "llm_inference.jsonl",
-                        "conversation_evidence.json",
-                        "language_evaluation.json",
-                        "calibration.json",
-                        "paired_comparisons.csv",
-                        "sensitivity.csv",
-                        "validation.json",
-                        "hypothesis_assessment.json",
-                        "preference_change_phases.csv",
-                        "PRESENTATION_NOTES.md",
-                        "presentation_data.json",
-                        "reproducibility_verification.json",
-                        "submission_verification.json",
-                    }
-                    if name in {"calibration.png"} and (STUDY / name).is_file():
-                        return self.send((STUDY / name).read_bytes(), kind="image/png")
-                    if name in allowed and (STUDY / name).is_file():
-                        kind = (
-                            "application/json; charset=utf-8"
-                            if name.endswith(".json")
-                            else "text/plain; charset=utf-8"
-                        )
-                        return self.send((STUDY / name).read_bytes(), kind=kind)
+                    return self.send_file(STUDY, name, {"calibration.png": "image/png"})
+                match = re.fullmatch(r"/study-runs/([a-f0-9]{16})/([^/]+)", path)
+                if match:
+                    run_id, name = match.groups()
+                    directory = STUDY_RUNS / run_id
+                    if all(
+                        (directory / artifact).is_file() for artifact in FINAL_RUN_FILES
+                    ):
+                        return self.send_file(directory, name, RUN_FILES)
                 static = {
                     "/": (WEB / "index.html", "text/html; charset=utf-8"),
+                    "/project-overview.pdf": (
+                        WEB.parent / "resources" / "Hostel_Cooling_Overview.pdf",
+                        "application/pdf",
+                    ),
                     "/app.js": (
                         WEB / "app.js",
                         "application/javascript; charset=utf-8",
@@ -226,9 +318,9 @@ def serve(port=8765, backend=None):
                 if path == "/api/consent":
                     if type(data.get("consent")) is not bool:
                         raise ValueError("consent must be boolean")
-                    memory.consent(self.participant, data["consent"])
-                    if not data["consent"]:
-                        with proposal_lock:
+                    with proposal_lock:
+                        memory.consent(self.participant, data["consent"])
+                        if not data["consent"]:
                             proposals.pop(self.participant, None)
                     return self.send(memory.profile(self.participant))
                 if path == "/api/preferences":
@@ -247,20 +339,44 @@ def serve(port=8765, backend=None):
                     )
                     return self.send(result)
                 if path == "/api/preferences/preview":
-                    profile = memory.profile(self.participant)
-                    if not profile["consent"]:
-                        raise PermissionError(
-                            "Consent is required before interpreting and saving personal preferences."
-                        )
                     text = data.get("message", "")
                     activity = data.get("activity")
                     if not isinstance(text, str) or not 1 <= len(text.strip()) <= 2000:
                         raise ValueError("Message must be 1..2000 characters")
                     if activity not in ("study", "sleep", "away"):
                         raise ValueError("Invalid activity")
-                    preference = Preference().patched(profile["preference"])
-                    patch = backend.extract(text, activity, preference)
-                    proposed = preference.patched(patch)
+                    with proposal_lock:
+                        profile = memory.profile(self.participant)
+                        if not profile["consent"]:
+                            raise PermissionError(
+                                "Consent is required before interpreting and saving personal preferences."
+                            )
+                        proposal = {
+                            "token": secrets.token_urlsafe(24),
+                            "expected": profile["preference"],
+                        }
+                        proposals[self.participant] = proposal
+                    preference = Preference().patched(proposal["expected"])
+                    try:
+                        patch = backend.extract(text, activity, preference)
+                        proposed = preference.patched(patch)
+                    except Exception:
+                        with proposal_lock:
+                            if proposals.get(self.participant) is proposal:
+                                proposals.pop(self.participant)
+                        raise
+                    with proposal_lock:
+                        if proposals.get(self.participant) is not proposal:
+                            return self.send(
+                                {
+                                    "error": "This review expired. Interpret your preference again."
+                                },
+                                409,
+                            )
+                        if patch:
+                            proposal.update(text=text, activity=activity, patch=patch)
+                        else:
+                            proposals.pop(self.participant)
                     if not patch:
                         return self.send(
                             {
@@ -269,46 +385,45 @@ def serve(port=8765, backend=None):
                                 "message": "No supported preference changes found. Nothing was saved.",
                             }
                         )
-                    token = secrets.token_urlsafe(24)
-                    with proposal_lock:
-                        proposals[self.participant] = {
-                            "token": token,
-                            "text": text,
-                            "activity": activity,
-                            "patch": patch,
-                            "expected": profile["preference"],
-                        }
                     return self.send(
                         {
-                            "proposal_id": token,
+                            "proposal_id": proposal["token"],
                             "patch": patch,
                             "proposed_preference": proposed.dict(),
                             "message": "Review these model interpretations before saving. You can discard them and rephrase.",
                         }
                     )
                 if path == "/api/preferences/confirm":
+                    accept = data.get("accept")
+                    if type(accept) is not bool:
+                        raise ValueError("accept must be boolean")
                     with proposal_lock:
                         proposal = proposals.get(self.participant)
-                        if not proposal or not secrets.compare_digest(
-                            str(data.get("proposal_id", "")), proposal["token"]
+                        if (
+                            not proposal
+                            or "patch" not in proposal
+                            or not secrets.compare_digest(
+                                str(data.get("proposal_id", "")), proposal["token"]
+                            )
                         ):
                             raise ValueError("No matching preference proposal")
                         proposals.pop(self.participant)
-                    if data.get("accept") is not True:
+                        if accept:
+                            result = memory.confirm_patch(
+                                self.participant,
+                                proposal["text"],
+                                proposal["activity"],
+                                proposal["patch"],
+                                backend.name,
+                                proposal["expected"],
+                            )
+                    if not accept:
                         return self.send(
                             {
                                 "saved": False,
                                 "message": "Interpretation discarded; memory unchanged.",
                             }
                         )
-                    result = memory.confirm_patch(
-                        self.participant,
-                        proposal["text"],
-                        proposal["activity"],
-                        proposal["patch"],
-                        backend.name,
-                        proposal["expected"],
-                    )
                     return self.send(result)
                 if path == "/api/recommend":
                     raw_conditions = dict(data.get("conditions", {}))
@@ -340,18 +455,20 @@ def serve(port=8765, backend=None):
                     )
                     method = data.get("method", "ours")
                     action, info = choose(method, room, c, p, current, ann, backend)
-                    predicted, heat = step(room, c, action)
-                    trajectory = []
-                    future = c
-                    for i in range(4):
-                        future, _ = step(room, future, action)
-                        trajectory.append(
-                            {
-                                "minutes": (i + 1) * 15,
-                                "temperature_c": future.indoor_c,
-                                "rh": future.rh,
-                            }
+                    predicted, heat, trajectory = forecast(room, c, action)
+                    fixed_action, _ = choose("fixed", room, c, p, current)
+                    try:
+                        _, fixed_heat, fixed_trajectory = forecast(
+                            room, c, fixed_action
                         )
+                    except ValueError:
+                        fixed = None
+                    else:
+                        fixed = {
+                            "action": fixed_action.dict(),
+                            "trajectory": fixed_trajectory,
+                            "one_hour_fan_wh": 4 * fixed_heat["fan_wh"],
+                        }
                     result = {
                         "action": action.dict(),
                         "method": method,
@@ -362,6 +479,8 @@ def serve(port=8765, backend=None):
                         "comfort": fuzzy_vote(predicted, room, action, p),
                         "adaptive": adaptive(c, room.fan_speed_ms[action.fan]),
                         "trajectory": trajectory,
+                        "one_hour_fan_wh": 4 * heat["fan_wh"],
+                        "fixed_schedule": fixed,
                         "preference": p.dict(),
                         "provenance": "Prediction from a simplified calibrated/specified RC model; input provenance selected by the researcher.",
                         "routine": routine,
@@ -404,6 +523,10 @@ def serve(port=8765, backend=None):
                         }
                     )
                 if path == "/api/experiment":
+                    if not study_available:
+                        raise PermissionError(
+                            "Running a new study requires the pinned local model."
+                        )
                     days = data.get("days", 7)
                     if type(days) is not int or not 1 <= days <= 14:
                         raise ValueError("days must be integer 1..14")
@@ -412,23 +535,22 @@ def serve(port=8765, backend=None):
                             return self.send(
                                 {"error": "Experiment already running"}, 409
                             )
+                        previous_report = job.get("report_url")
                         job.clear()
-                        job.update(state="running", days=days)
+                        job.update(
+                            state="running", days=days, report_url=previous_report
+                        )
 
                     def work():
                         from .study import run_study
 
                         try:
-                            kind = (
-                                "local"
-                                if backend.__class__.__name__ == "LocalLLM"
-                                else "ollama" if backend.is_llm else "offline"
-                            )
-                            result = run_study(STUDY, days=days, backend_kind=kind)
+                            run_id = secrets.token_hex(8)
+                            output = STUDY_RUNS / run_id
+                            output.mkdir(parents=True)
+                            result = run_study(output, days=days)
                             with job_lock:
-                                job.update(
-                                    state="complete", methods=len(result["rows"])
-                                )
+                                job.update(study_job(output, result))
                         except Exception as error:
                             with job_lock:
                                 job.update(state="failed", error=str(error))
@@ -487,7 +609,10 @@ def serve(port=8765, backend=None):
                 )
 
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"Hostel Cooling Lab: http://127.0.0.1:{port} | {backend.name}", flush=True)
+    print(
+        f"Hostel Cooling Lab: http://127.0.0.1:{server.server_port} | {backend.name}",
+        flush=True,
+    )
     try:
         server.serve_forever()
     except KeyboardInterrupt:

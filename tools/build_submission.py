@@ -37,6 +37,8 @@ def verify(path):
 
 def build(target):
     main = {
+        "00_Project_Overview.pdf": ROOT
+        / "hostel_cooling/resources/Hostel_Cooling_Overview.pdf",
         "01_Final_Report.pdf": OUT / "Hostel_Cooling_Project_Report.pdf",
         "02_Editable_Presentation.pptx": OUT / "Hostel_Cooling_Final_Presentation.pptx",
         "03_Presentation.pdf": OUT / "Hostel_Cooling_Final_Presentation.pdf",
@@ -66,6 +68,7 @@ def build(target):
             files["05_Source_Code/" + name] = path
     readme = (
         "HOSTEL COOLING / CE F417 + CE F423 / FINAL SUBMISSION\n\n"
+        "00_Project_Overview.pdf: two-page dashboard walkthrough and study summary.\n"
         "01_Final_Report.pdf: 14-page course report with all eight hypothesis findings.\n"
         "02_Editable_Presentation.pptx: 18 slides, native editable charts/tables, speaker notes.\n"
         "03_Presentation.pdf: rendered copy for reliable presentation without PowerPoint.\n"
@@ -74,6 +77,8 @@ def build(target):
         "Double-click open-project.bat inside 05_Source_Code to start the app and open your browser.\n"
         "For a fresh Windows machine, install Python 3.11+ and run setup.bat once, then open-project.bat.\n"
         "Setup downloads the pinned approximately 2.5 GB local Qwen model and runtime.\n"
+        "Quick demo: run setup.bat -DemoOnly, then open-project.bat -Backend offline.\n"
+        "Open My room and click Try the rain example for a side-by-side simulation.\n"
         "Large binaries, model weights and private participant records are excluded from this ZIP.\n\n"
         "Read outputs/study/ inside 05_Source_Code for 27 runs, 18,144 intervals, actual\n"
         "inference journals, held-out language outcomes, calibration and verification records.\n"
